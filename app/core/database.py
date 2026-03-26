@@ -1,12 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from contextlib import contextmanager
 
-class Base(DeclarativeBase):
-    """Base class for SQLAlchemy 2.0 style models."""
-    pass
-
-db = SQLAlchemy(model_class=Base)
+db = SQLAlchemy()
 
 @contextmanager
 def get_db():

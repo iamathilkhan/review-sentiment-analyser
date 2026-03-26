@@ -1,7 +1,6 @@
 from functools import wraps
 from flask import request, g, current_app, abort, jsonify
 from .security import decode_token
-from ..models.user import User
 import time
 
 def login_required(f):
@@ -26,6 +25,7 @@ def login_required(f):
         if not payload:
             abort(401, description="Invalid or expired token")
             
+        from ..models.user import User
         user = User.query.get(payload['sub'])
         if not user or not user.is_active:
             abort(401, description="User not found or inactive")

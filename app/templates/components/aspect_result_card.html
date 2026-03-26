@@ -1,0 +1,115 @@
+{% macro aspect_result_card(aspects, overall_sentiment, review_content=None) %}
+{% set positive_aspects = aspects | selectattr('polarity', 'equalto', 'positive') | list %}
+{% set negative_aspects = aspects | selectattr('polarity', 'equalto', 'negative') | list %}
+{% set neutral_aspects = aspects | selectattr('polarity', 'equalto', 'neutral') | list %}
+
+<div class="aspect-result-card bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+        <h3 class="font-semibold text-gray-800">Analysis Summary</h3>
+        <span class="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase 
+            {% if overall_sentiment == 'positive' %}bg-teal-50 text-teal-700 border border-teal-100
+            {% elif overall_sentiment == 'negative' %}bg-red-50 text-red-600 border border-red-100
+            {% else %}bg-gray-100 text-gray-600 border border-gray-200{% endif %}">
+            {{ overall_sentiment }}
+        </span>
+    </div>
+
+    <div class="p-6">
+        {% if review_content %}
+        <div class="mb-6">
+            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Original Feedback</h4>
+            <p class="text-gray-600 text-sm italic border-l-4 border-gray-200 pl-4 py-1">{{ review_content }}</p>
+        </div>
+        {% endif %}
+
+        {% if aspects %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- PROS -->
+            <div>
+                <h4 class="text-sm font-bold text-teal-700 flex items-center mb-4">
+                    <span class="mr-2">✓</span> PROS
+                </h4>
+                {% if positive_aspects %}
+                <div class="space-y-4">
+                    {% for aspect in positive_aspects %}
+                    <div class="group">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium text-gray-700 capitalize">
+                                {{ aspect.aspect_category.replace('_', ' ') }}
+                            </span>
+                            <span class="text-xs text-gray-400 font-mono">{{ (aspect.confidence * 100)|round }}%</span>
+                        </div>
+                        <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-teal-500 transition-all duration-500 ease-out" style="width: {{ aspect.confidence * 100 }}%"></div>
+                        </div>
+                        {% if aspect.aspect_term %}
+                        <p class="text-[10px] text-gray-400 mt-1 italic group-hover:text-teal-600 transition-colors">"{{ aspect.aspect_term }}"</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-xs text-gray-400 italic">No specific pros identified.</p>
+                {% endif %}
+            </div>
+
+            <!-- CONS -->
+            <div>
+                <h4 class="text-sm font-bold text-red-600 flex items-center mb-4">
+                    <span class="mr-2">✗</span> CONS
+                </h4>
+                {% if negative_aspects %}
+                <div class="space-y-4">
+                    {% for aspect in negative_aspects %}
+                    <div class="group">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium text-gray-700 capitalize">
+                                {{ aspect.aspect_category.replace('_', ' ') }}
+                            </span>
+                            <span class="text-xs text-gray-400 font-mono">{{ (aspect.confidence * 100)|round }}%</span>
+                        </div>
+                        <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-red-400 transition-all duration-500 ease-out" style="width: {{ aspect.confidence * 100 }}%"></div>
+                        </div>
+                        {% if aspect.aspect_term %}
+                        <p class="text-[10px] text-gray-400 mt-1 italic group-hover:text-red-500 transition-colors">"{{ aspect.aspect_term }}"</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-xs text-gray-400 italic">No significant negatives detected.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- OBSERVATIONS (Neutral) -->
+        {% if neutral_aspects %}
+        <div class="mt-8 pt-6 border-t border-gray-50">
+            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Neutral Observations</h4>
+            <div class="flex flex-wrap gap-2">
+                {% for aspect in neutral_aspects %}
+                <span class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs border border-gray-100 flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-2"></span>
+                    {{ aspect.aspect_category.replace('_', ' ') }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-8">
+            <div class="text-gray-300 text-4xl mb-3">🔍</div>
+            <p class="text-gray-500 text-sm">No strong aspects detected — try a more detailed review.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{# Standalone partial support #}
+{% if review is defined %}
+    {{ aspect_result_card(review.aspect_sentiments, review.overall_sentiment, review.content) }}
+{% endif %}

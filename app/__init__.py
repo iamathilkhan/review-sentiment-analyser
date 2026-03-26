@@ -18,13 +18,24 @@ def create_app(config_name="development"):
     from .api.analytics import analytics_bp
     from .api.admin import admin_bp
     from .api.seller import seller_bp
+    from .api.sse import sse_bp
+    from .api.customer import customer_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(reviews_bp, url_prefix='/reviews')
     app.register_blueprint(analytics_bp, url_prefix='/analytics')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(seller_bp, url_prefix='/seller')
+    app.register_blueprint(sse_bp, url_prefix='/sse')
+    app.register_blueprint(customer_bp, url_prefix='/dashboard')
     
+    # Initialize ABSA Pipeline on demand in workers/services instead
+    # from .ml.model_loader import get_pipeline
+    # try:
+    #     get_pipeline()
+    # except Exception:
+    #     pass
+
     @app.route('/')
     def index():
         from flask import redirect, url_for

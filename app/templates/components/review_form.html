@@ -1,0 +1,60 @@
+{% macro review_form(product_id) %}
+<div class="review-submission-container" id="review-container-{{ product_id }}">
+    <form id="review-form-{{ product_id }}" class="review-form" data-product-id="{{ product_id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group mb-3">
+            <label for="review-content" class="form-label">Write your review</label>
+            <textarea 
+                id="review-content" 
+                name="content" 
+                class="form-control" 
+                rows="5" 
+                placeholder="Share your experience (min 20, max 2000 characters)"
+                required
+                minlength="20"
+                maxlength="2000"
+            ></textarea>
+            <div class="form-text d-flex justify-content-between">
+                <span id="char-count-msg" class="text-muted">Minimum 20 characters required.</span>
+                <span id="char-counter"><span id="current-count">0</span> / 2000</span>
+            </div>
+        </div>
+
+        <button type="submit" id="submit-review-btn" class="btn btn-primary w-100" disabled>
+            Submit Review for Analysis
+        </button>
+    </form>
+
+    <!-- Loading Overlay -->
+    <div id="review-loading" class="review-overlay d-none">
+        <div class="text-center p-4">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h5 id="processing-status-text">Analysing your review...</h5>
+            <p class="text-muted">We're identifying aspects like quality, battery life, and more.</p>
+        </div>
+    </div>
+
+    <!-- Results Container -->
+    <div id="review-result" class="review-result-container d-none">
+        <!-- Result content will be injected here via JS/Partial -->
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/review_submit.js') }}"></script>
+<style>
+    .review-overlay {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        margin-top: 1rem;
+    }
+    .review-result-container {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border-left: 5px solid #0d6efd;
+    }
+</style>
+{% endmacro %}

@@ -22,7 +22,23 @@ celery.conf.update(
     result_serializer='json',
     timezone='UTC',
     enable_utc=True,
+    task_queues={
+        'celery': {
+            'exchange': 'celery',
+            'routing_key': 'celery',
+        },
+        'dead_letter': {
+            'exchange': 'dead_letter',
+            'routing_key': 'dead_letter',
+        },
+    },
+    task_routes={
+        'workers.review_tasks.process_review_task': {'queue': 'celery'},
+    },
 )
+
+# Optional: DLQ handling - tasks that fail too many times can be sent here manually
+# or via specific queue configuration if using RabbitMQ. For Redis, we manage retries.
 
 if __name__ == '__main__':
     celery.start()

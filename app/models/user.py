@@ -1,32 +1,29 @@
+from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import List, Optional
-from sqlalchemy import String, Boolean, DateTime, Enum, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from flask_login import UserMixin
 from ..core.database import db
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[str] = mapped_column(Enum("customer", "seller", "admin", name="user_roles"), nullable=False)
+    id = db.Column(db.Uuid, primary_key=True, default=uuid.uuid4)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    hashed_password = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.Enum("customer", "seller", "admin", name="user_roles"), nullable=False)
     
-    # Encrypted fields
-    phone_encrypted: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    address_encrypted: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    phone_encrypted = db.Column(db.String(500), nullable=True)
+    address_encrypted = db.Column(db.String(1000), nullable=True)
     
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
     # Relationships
-    products: Mapped[List["Product"]] = relationship(back_populates="seller", cascade="all, delete-orphan")
-    reviews: Mapped[List["Review"]] = relationship(back_populates="user")
-    complaints: Mapped[List["Complaint"]] = relationship(back_populates="user")
+    products = db.relationship("Product", back_populates="seller", cascade="all, delete-orphan")
+    reviews = db.relationship("Review", back_populates="user")
+    complaints = db.relationship("Complaint", back_populates="user")
 
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.role})>"

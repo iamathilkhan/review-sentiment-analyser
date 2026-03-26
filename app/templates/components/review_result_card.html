@@ -1,0 +1,57 @@
+<div class="review-result-card animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Analysis Results</h4>
+        <span class="badge {% if review.overall_sentiment == 'positive' %}bg-success{% elif review.overall_sentiment == 'negative' %}bg-danger{% else %}bg-secondary{% endif %} text-uppercase">
+            {{ review.overall_sentiment }}
+        </span>
+    </div>
+
+    <div class="row g-3">
+        {% for aspect in review.aspect_sentiments %}
+        <div class="col-md-6">
+            <div class="aspect-badge p-2 border rounded d-flex justify-content-between align-items-center bg-white shadow-sm">
+                <div>
+                    <strong class="text-capitalize">{{ aspect.aspect_category.replace('_', ' ') }}</strong>
+                    {% if aspect.aspect_term %}
+                    <br><small class="text-muted">"{{ aspect.aspect_term }}"</small>
+                    {% endif %}
+                </div>
+                <div class="text-end">
+                    <span class="badge {% if aspect.polarity == 'positive' %}bg-success-subtle text-success{% elif aspect.polarity == 'negative' %}bg-danger-subtle text-danger{% else %}bg-light text-dark{% endif %}">
+                        {{ aspect.polarity }}
+                    </span>
+                    <div class="progress mt-1" style="height: 4px; width: 60px;">
+                        <div class="progress-bar {% if aspect.polarity == 'positive' %}bg-success{% elif aspect.polarity == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ (aspect.confidence * 100)|round }}%" 
+                             aria-valuenow="{{ (aspect.confidence * 100)|round }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if review.complaint %}
+    <div class="alert alert-warning mt-3 mb-0">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Auto-escalation:</strong> A support ticket has been created with 
+        <span class="badge bg-dark">{{ review.complaint.severity }}</span> severity 
+        due to critical negative feedback.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .aspect-badge {
+        transition: transform 0.2s;
+    }
+    .aspect-badge:hover {
+        transform: translateY(-2px);
+    }
+    .bg-success-subtle { background-color: #d1e7dd; }
+    .bg-danger-subtle { background-color: #f8d7da; }
+</style>

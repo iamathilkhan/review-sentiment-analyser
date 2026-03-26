@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}My Reviews History - ReviewAI{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto" x-data="{ 
+    modalOpen: false, 
+    reviewLoading: false, 
+    aspectHtml: '',
+    async openResult(id) {
+        this.modalOpen = true;
+        this.reviewLoading = true;
+        try {
+            const res = await fetch(`/reviews/${id}/result-partial`);
+            if(res.ok) this.aspectHtml = await res.text();
+            else this.aspectHtml = '<div class=\'p-8 text-center text-gray-400\'>Result not available.</div>';
+        } catch(e) {
+            this.aspectHtml = '<div class=\'p-8 text-center text-red-500\'>Connection error.</div>';
+        } finally {
+            this.reviewLoading = false;
+        }
+    }
+}">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Review History</h1>
+            <p class="text-gray-500 mt-2">A complete record of all your product feedback and AI analysis.</p>
+        </div>
+        <div class="flex bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+            <button class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-semibold shadow-sm">All Reviews</button>
+            <button class="px-4 py-2 text-gray-500 hover:text-gray-700 rounded-lg text-sm font-semibold">Pending</button>
+            <button class="px-4 py-2 text-gray-500 hover:text-gray-700 rounded-lg text-sm font-semibold">Flagged</button>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-100">
+                <thead class="bg-gray-50/50">
+                    <tr>
+                        <th class="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Product & Date</th>
+                        <th class="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Feedback Snapshot</th>
+                        <th class="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Processing Status</th>
+                        <th class="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">Overall</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for review in reviews %}
+                    <tr class="group hover:bg-gray-50/80 transition-all cursor-pointer" @click="openResult('{{ review.id }}')">
+                        <td class="px-8 py-6">
+                            <div class="font-bold text-gray-900 text-sm group-hover:text-teal-600 transition-colors">{{ review.product.name }}</div>
+                            <div class="text-[10px] text-gray-400 font-medium">{{ review.created_at.strftime('%b %d, %Y') }}</div>
+                        </td>
+                        <td class="px-8 py-6 max-w-xs md:max-w-md">
+                            <p class="text-sm text-gray-500 line-clamp-1 italic">"{{ review.content }}"</p>
+                        </td>
+                        <td class="px-8 py-6">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase inline-flex items-center
+                                {% if review.status == 'pending' %}bg-gray-100 text-gray-500
+                                {% elif review.status == 'processing' %}bg-amber-50 text-amber-700
+                                {% elif review.status == 'done' %}bg-teal-50 text-teal-700
+                                {% else %}bg-red-50 text-red-600{% endif %}">
+                                {% if review.status == 'processing' %}
+                                <span class="animate-pulse w-1.5 h-1.5 rounded-full bg-amber-500 mr-2"></span>
+                                {% endif %}
+                                {{ review.status }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <span class="px-2.5 py-1 rounded text-[10px] font-black uppercase
+                                {% if review.overall_sentiment == 'positive' %}bg-teal-50 text-teal-600 border border-teal-100
+                                {% elif review.overall_sentiment == 'negative' %}bg-red-50 text-red-600 border border-red-100
+                                {% else %}bg-gray-100 text-gray-400 border border-gray-100{% endif %}">
+                                {{ review.overall_sentiment or 'N/A' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <div class="px-8 py-6 bg-gray-50/50 border-t border-gray-100 flex justify-between items-center">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                Showing {{ reviews|length }} of {{ pagination.total }} entries
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{{ url_for('customer.my_reviews', page=pagination.prev_num) }}" 
+                   class="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all {% if not pagination.has_prev %}pointer-events-none opacity-40{% endif %}">
+                    Previous
+                </a>
+                <span class="text-xs font-mono font-bold text-teal-600">{{ pagination.page }} / {{ pagination.pages }}</span>
+                <a href="{{ url_for('customer.my_reviews', page=pagination.next_num) }}" 
+                   class="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all {% if not pagination.has_next %}pointer-events-none opacity-40{% endif %}">
+                    Next
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Modal Fragment (Shared with Dashboard) -->
+    <template x-teleport="body">
+        <div x-show="modalOpen" 
+             class="fixed inset-0 z-50 flex items-center justify-center p-6"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100">
+            <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="modalOpen = false"></div>
+            
+            <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col"
+                 x-show="modalOpen"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+                
+                <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="font-black text-gray-900 tracking-tight">Aspect Analysis Detailed Report</h3>
+                    <button @click="modalOpen = false" class="p-2 rounded-full hover:bg-gray-200 transition-colors">
+                        <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-8">
+                    <div x-show="reviewLoading" class="flex flex-col items-center justify-center py-20">
+                        <div class="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="mt-6 text-sm font-bold text-gray-400 uppercase tracking-widest">Retrieving Neural Map...</p>
+                    </div>
+                    <div x-show="!reviewLoading" x-html="aspectHtml" class="animate__animated animate__fadeIn"></div>
+                </div>
+                
+                <div class="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-end">
+                    <button @click="modalOpen = false" class="px-8 py-3 bg-teal-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-teal-600/20 hover:bg-teal-700 transition-all">
+                        Understand Results
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+{% endblock %}

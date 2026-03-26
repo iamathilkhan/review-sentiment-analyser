@@ -1,0 +1,364 @@
+[
+  {
+    "text": "The battery life is amazing, it lasts for two days easily. However, the camera is quite blurry and doesn't take good photos at night.",
+    "ground_truth": [
+      {"aspect_category": "battery_life", "polarity": "positive"},
+      {"aspect_category": "camera", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Great value for money. The performance is smooth and I haven't seen any lag so far. The packaging was also very secure.",
+    "ground_truth": [
+      {"aspect_category": "price_value", "polarity": "positive"},
+      {"aspect_category": "performance", "polarity": "positive"},
+      {"aspect_category": "packaging", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The display is vibrant and bright. But the build quality feels a bit plasticky and cheap. Customer service was helpful when I called them.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "positive"},
+      {"aspect_category": "build_quality", "polarity": "negative"},
+      {"aspect_category": "customer_service", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Delivery was extremely slow. It took two weeks to arrive. The product quality is decent though.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "negative"},
+      {"aspect_category": "product_quality", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "I love the sleek design and solid build. The battery life could be better, I have to charge it every evening.",
+    "ground_truth": [
+      {"aspect_category": "build_quality", "polarity": "positive"},
+      {"aspect_category": "battery_life", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "The performance in games is outstanding. Fast loading times and high FPS. The price is a bit high though.",
+    "ground_truth": [
+      {"aspect_category": "performance", "polarity": "positive"},
+      {"aspect_category": "price_value", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Packaging arrived damaged, and the screen had a scratch on it. Very disappointed with the delivery service.",
+    "ground_truth": [
+      {"aspect_category": "packaging", "polarity": "negative"},
+      {"aspect_category": "display", "polarity": "negative"},
+      {"aspect_category": "delivery", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "The camera quality is professional grade. Best smartphone for photography. Display is also top notch.",
+    "ground_truth": [
+      {"aspect_category": "camera", "polarity": "positive"},
+      {"aspect_category": "display", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Customer service was rude and didn't help with my refund. I will not buy from this brand again because of the poor support.",
+    "ground_truth": [
+      {"aspect_category": "customer_service", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Solid product quality. Feels like it will last for years. The price matches the value you get.",
+    "ground_truth": [
+      {"aspect_category": "product_quality", "polarity": "positive"},
+      {"aspect_category": "price_value", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Battery drains too fast even with light use. The performance is also sluggish.",
+    "ground_truth": [
+      {"aspect_category": "battery_life", "polarity": "negative"},
+      {"aspect_category": "performance", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Fast shipping, arrived in two days! The packaging was simple but effective.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "positive"},
+      {"aspect_category": "packaging", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The OLED screen is beautiful with deep blacks. However, there is some stuttering in the UI performance.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "positive"},
+      {"aspect_category": "performance", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Great customer service, they resolved my issue in minutes. The product quality is also excellent.",
+    "ground_truth": [
+      {"aspect_category": "customer_service", "polarity": "positive"},
+      {"aspect_category": "product_quality", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Too expensive for what it offers. You can find better performance at a lower price.",
+    "ground_truth": [
+      {"aspect_category": "price_value", "polarity": "negative"},
+      {"aspect_category": "performance", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "The camera lens is very sharp. Macro shots look amazing. The build is slightly heavy.",
+    "ground_truth": [
+      {"aspect_category": "camera", "polarity": "positive"},
+      {"aspect_category": "build_quality", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Everything was perfect, from the delivery to the product quality. Highly recommended.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "positive"},
+      {"aspect_category": "product_quality", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The battery charges very slowly. It takes over 3 hours for a full charge. The display is okay.",
+    "ground_truth": [
+      {"aspect_category": "battery_life", "polarity": "negative"},
+      {"aspect_category": "display", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Packaging was minimal and eco-friendly. I appreciate the effort. Product quality is top tier.",
+    "ground_truth": [
+      {"aspect_category": "packaging", "polarity": "positive"},
+      {"aspect_category": "product_quality", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Performance is acceptable for basic tasks. Don't expect to run heavy games though.",
+    "ground_truth": [
+      {"aspect_category": "performance", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "The night mode on the camera is quite noisy and disappointing. Battery life is decent.",
+    "ground_truth": [
+      {"aspect_category": "camera", "polarity": "negative"},
+      {"aspect_category": "battery_life", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Fastest delivery I've ever experienced! The price was also very competitive during the sale.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "positive"},
+      {"aspect_category": "price_value", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The build feels very premium with the glass back. The software performance is buttery smooth.",
+    "ground_truth": [
+      {"aspect_category": "build_quality", "polarity": "positive"},
+      {"aspect_category": "performance", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Packaging could have been better. The box was slightly crushed. Camera seems fine though.",
+    "ground_truth": [
+      {"aspect_category": "packaging", "polarity": "neutral"},
+      {"aspect_category": "camera", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The screen doesn't get bright enough in direct sunlight. Battery life is the only saving grace.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "negative"},
+      {"aspect_category": "battery_life", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Customer service didn't reply to my emails for a week. Product quality is just average.",
+    "ground_truth": [
+      {"aspect_category": "customer_service", "polarity": "negative"},
+      {"aspect_category": "product_quality", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Excellent value at this price point. Reliable performance and good enough camera.",
+    "ground_truth": [
+      {"aspect_category": "price_value", "polarity": "positive"},
+      {"aspect_category": "performance", "polarity": "positive"},
+      {"aspect_category": "camera", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "The build is very fragile, it cracked after a small drop. Delivery was on time though.",
+    "ground_truth": [
+      {"aspect_category": "build_quality", "polarity": "negative"},
+      {"aspect_category": "delivery", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Stunning display for watching movies. The battery life is also impressive.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "positive"},
+      {"aspect_category": "battery_life", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Very poor performance in multi-tasking. The device heats up quickly. Product quality is questionable.",
+    "ground_truth": [
+      {"aspect_category": "performance", "polarity": "negative"},
+      {"aspect_category": "product_quality", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Packaging was very clean. The camera took some time to focus. Display is crisp.",
+    "ground_truth": [
+      {"aspect_category": "packaging", "polarity": "positive"},
+      {"aspect_category": "camera", "polarity": "neutral"},
+      {"aspect_category": "display", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Price is okay, but you can find better value elsewhere. Battery is good.",
+    "ground_truth": [
+      {"aspect_category": "price_value", "polarity": "neutral"},
+      {"aspect_category": "battery_life", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Professional delivery team, they even helped with the setup. Product quality is supreme.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "positive"},
+      {"aspect_category": "customer_service", "polarity": "positive"},
+      {"aspect_category": "product_quality", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The camera colors are oversaturated. Performance is decent, and the build is solid.",
+    "ground_truth": [
+      {"aspect_category": "camera", "polarity": "negative"},
+      {"aspect_category": "performance", "polarity": "neutral"},
+      {"aspect_category": "build_quality", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The display has a weird yellow tint. Packaging was also very flimsy.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "negative"},
+      {"aspect_category": "packaging", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Best performance in its class. Lightning fast. Price is worth every penny.",
+    "ground_truth": [
+      {"aspect_category": "performance", "polarity": "positive"},
+      {"aspect_category": "price_value", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Delivery was delayed by 3 days. The product quality is not as expected.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "negative"},
+      {"aspect_category": "product_quality", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "The battery life is the main reason to buy this. Lasts forever. Performance is basic.",
+    "ground_truth": [
+      {"aspect_category": "battery_life", "polarity": "positive"},
+      {"aspect_category": "performance", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Amazing camera, poor build quality. Very easily scratched. Support was neutral.",
+    "ground_truth": [
+      {"aspect_category": "camera", "polarity": "positive"},
+      {"aspect_category": "build_quality", "polarity": "negative"},
+      {"aspect_category": "customer_service", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Packaging felt luxurious. The product quality is evident. Price is high though.",
+    "ground_truth": [
+      {"aspect_category": "packaging", "polarity": "positive"},
+      {"aspect_category": "product_quality", "polarity": "positive"},
+      {"aspect_category": "price_value", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "The screen is large and beautiful. Battery life is also quite good for its size.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "positive"},
+      {"aspect_category": "battery_life", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Display is too small for my liking. Performance is great for gaming though.",
+    "ground_truth": [
+      {"aspect_category": "display", "polarity": "negative"},
+      {"aspect_category": "performance", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Customer service provided a full refund without any questions. Excellent support.",
+    "ground_truth": [
+      {"aspect_category": "customer_service", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Product quality is average at best. Nothing special. Price is also mediocre.",
+    "ground_truth": [
+      {"aspect_category": "product_quality", "polarity": "neutral"},
+      {"aspect_category": "price_value", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Delivery was fast enough. Packaging kept it safe. Camera is decent.",
+    "ground_truth": [
+      {"aspect_category": "delivery", "polarity": "neutral"},
+      {"aspect_category": "packaging", "polarity": "positive"},
+      {"aspect_category": "camera", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "The battery life is very inconsistent. Sometimes it lasts, sometimes it doesn't. Build is okay.",
+    "ground_truth": [
+      {"aspect_category": "battery_life", "polarity": "neutral"},
+      {"aspect_category": "build_quality", "polarity": "neutral"}
+    ]
+  },
+  {
+    "text": "Build quality is top tier. The display is a bit dim though. Performance is smooth.",
+    "ground_truth": [
+      {"aspect_category": "build_quality", "polarity": "positive"},
+      {"aspect_category": "display", "polarity": "negative"},
+      {"aspect_category": "performance", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "Overpriced product. Weak performance and poor battery. Delivery was fast though.",
+    "ground_truth": [
+      {"aspect_category": "price_value", "polarity": "negative"},
+      {"aspect_category": "performance", "polarity": "negative"},
+      {"aspect_category": "battery_life", "polarity": "negative"},
+      {"aspect_category": "delivery", "polarity": "positive"}
+    ]
+  },
+  {
+    "text": "The camera captures great details. Micro SD slot is a plus for build. Packaging was poor.",
+    "ground_truth": [
+      {"aspect_category": "camera", "polarity": "positive"},
+      {"aspect_category": "build_quality", "polarity": "positive"},
+      {"aspect_category": "packaging", "polarity": "negative"}
+    ]
+  },
+  {
+    "text": "Service was okay. Product quality is good. Value for money is high.",
+    "ground_truth": [
+      {"aspect_category": "customer_service", "polarity": "neutral"},
+      {"aspect_category": "product_quality", "polarity": "positive"},
+      {"aspect_category": "price_value", "polarity": "positive"}
+    ]
+  }
+]
