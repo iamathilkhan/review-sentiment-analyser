@@ -116,11 +116,13 @@ def login():
     
     return response
 
-@auth_bp.route('/logout', methods=['POST'])
+@auth_bp.route('/logout', methods=['GET', 'POST'])
 def logout():
     """Clear the access token cookie."""
-    response = make_response(jsonify({"message": "Logged out successfully"}))
+    from flask import redirect, url_for, flash
+    response = make_response(redirect(url_for('auth.login')))
     response.delete_cookie('access_token')
+    flash("You have been logged out.", "info")
     return response
 
 @auth_bp.route('/me', methods=['GET'])

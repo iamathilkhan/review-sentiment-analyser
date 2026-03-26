@@ -52,7 +52,7 @@
                                 <button @click="profileOpen = !profileOpen" class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" id="user-menu-button">
                                     <span class="sr-only">Open user menu</span>
                                     <div class="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold">
-                                        {{ current_user.username[0].upper() if current_user.username else 'U' }}
+                                        {{ current_user.name[0].upper() if current_user.name else 'U' }}
                                     </div>
                                 </button>
                             </div>
