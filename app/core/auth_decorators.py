@@ -25,8 +25,14 @@ def login_required(f):
         if not payload:
             abort(401, description="Invalid or expired token")
             
+        from ..core.database import db
         from ..models.user import User
-        user = User.query.get(payload['sub'])
+        import uuid
+        try:
+            user_id = uuid.UUID(payload['sub'])
+            user = db.session.get(User, user_id)
+        except ValueError:
+            abort(401, description="Invalid user identifier")
         if not user or not user.is_active:
             abort(401, description="User not found or inactive")
             

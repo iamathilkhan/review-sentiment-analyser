@@ -44,7 +44,11 @@ def create_app(config_name="development"):
     # Jinja2 globals
     @app.context_processor
     def inject_now():
-        return {'now': datetime.utcnow()}
+        from datetime import datetime
+        return {
+            'now': datetime.utcnow(),
+            'current_year': datetime.utcnow().year
+        }
 
     @app.context_processor
     def utility_processor():
