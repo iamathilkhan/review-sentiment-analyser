@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Reviews - ReviewAI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Product Reviews</h1>
+        <span class="px-3 py-1 bg-teal-100 text-teal-800 text-sm font-medium rounded-full">
+            {{ reviews|length }} Total Reviews
+        </span>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {% for review in reviews %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-sm font-semibold text-teal-600 uppercase tracking-wider">{{ review.product.name }}</p>
+                            <p class="text-xs text-gray-500">{{ format_datetime(review.created_at) }}</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if review.overall_sentiment == 'positive' %}sentiment-positive
+                            {% elif review.overall_sentiment == 'negative' %}sentiment-negative
+                            {% else %}sentiment-neutral{% endif %}">
+                            {{ review.overall_sentiment|capitalize }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-gray-700 text-sm italic mb-4">"{{ review.content[:150] }}{% if review.content|length > 150 %}...{% endif %}"</p>
+                    
+                    <div class="border-t border-gray-100 pt-4">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Key Aspects</h4>
+                        <div class="flex flex-wrap gap-2">
+                            {% for aspect in review.aspect_sentiments %}
+                                <span class="px-2 py-1 rounded bg-gray-50 border border-gray-100 text-[10px] font-medium text-gray-600">
+                                    {{ aspect.aspect_category }}: 
+                                    <span class="{% if aspect.polarity == 'positive' %}text-teal-600{% elif aspect.polarity == 'negative' %}text-coral-600{% endif %}">
+                                        {{ aspect.polarity }}
+                                    </span>
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-span-full py-12 text-center bg-white rounded-xl border-2 border-dashed border-gray-200">
+                <p class="text-gray-500">No reviews found. Try seeding the database!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
