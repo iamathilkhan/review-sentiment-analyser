@@ -1,0 +1,78 @@
+{% from "seller/components/product_sentiment_donut.html" import sentiment_donut %}
+
+{% macro product_overview_card(p_data) %}
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-6 relative overflow-hidden group">
+    <div class="flex justify-between items-start mb-6">
+        <div class="flex-grow">
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-teal-600 transition-colors">{{ p_data.product.name }}</h3>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                {{ p_data.product.category }}
+            </span>
+        </div>
+        
+        <!-- SVG Donut -->
+        <div class="flex-shrink-0">
+            {{ sentiment_donut(p_data.sentiment_breakdown.positive, p_data.sentiment_breakdown.negative, p_data.sentiment_breakdown.neutral) }}
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4 divide-x divide-gray-100">
+        <div class="pr-2">
+            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Reviews</p>
+            <p class="text-2xl font-bold text-gray-900">{{ p_data.review_count }}</p>
+        </div>
+        <div class="pl-4">
+            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Open Complaints</p>
+            <div class="flex items-center">
+                <p class="text-2xl font-bold {{ 'text-red-500' if p_data.complaint_count > 0 else 'text-gray-900' }}">
+                    {{ p_data.complaint_count }}
+                </p>
+                {% if p_data.complaint_count > 0 %}
+                    <span class="ml-2 flex h-2 w-2 rounded-full bg-red-400 animate-pulse"></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6 pt-4 border-t border-gray-50 space-y-3">
+        {% if p_data.top_positive_aspects %}
+        <div class="flex items-center text-xs">
+            <span class="text-teal-600 mr-2">👍</span>
+            <div class="flex flex-wrap gap-1">
+                {% for aspect in p_data.top_positive_aspects %}
+                <span class="bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-full border border-teal-100 font-medium">{{ aspect }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if p_data.top_negative_aspects %}
+        <div class="flex items-center text-xs">
+            <span class="text-red-400 mr-2">👎</span>
+            <div class="flex flex-wrap gap-1">
+                {% for aspect in p_data.top_negative_aspects %}
+                <span class="bg-red-50 text-red-700 px-1.5 py-0.5 rounded-full border border-red-100 font-medium">{{ aspect }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="mt-4 flex gap-2">
+        <button 
+            @click="selectedProduct = '{{ p_data.product.id }}'; activeTab = 'aspects'; loadAspects('{{ p_data.product.id }}')"
+            class="flex-grow bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-xs font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+        >
+            View Aspect Analysis
+        </button>
+        <button 
+            @click="selectedProduct = '{{ p_data.product.id }}'; activeTab = 'complaints'"
+            class="p-2 border border-gray-200 text-gray-400 rounded-lg hover:text-red-500 hover:border-red-100 transition-colors"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+{% endmacro %}

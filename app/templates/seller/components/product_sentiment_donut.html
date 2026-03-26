@@ -1,0 +1,61 @@
+{% macro sentiment_donut(positive, negative, neutral, size=60) %}
+{% set total = positive + negative + neutral %}
+{% if total == 0 %}
+    {% set pos_per, neg_per, neu_per = 0, 0, 100 %}
+{% else %}
+    {% set pos_per = (positive / total * 100) %}
+    {% set neg_per = (negative / total * 100) %}
+    {% set neu_per = (neutral / total * 100) %}
+{% endif %}
+
+{% set radius = (size / 2) - 4 %}
+{% set circumference = 2 * 3.14159 * radius %}
+
+{% set pos_stroke = (pos_per / 100) * circumference %}
+{% set neg_stroke = (neg_per / 100) * circumference %}
+{% set neu_stroke = (neu_per / 100) * circumference %}
+
+<div class="relative inline-flex items-center justify-center">
+    <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 {{ size }} {{ size }}" class="transform -rotate-90">
+        <!-- Neutral segment (Gray) -->
+        <circle
+            cx="{{ size / 2 }}"
+            cy="{{ size / 2 }}"
+            r="{{ radius }}"
+            stroke="currentColor"
+            stroke-width="8"
+            fill="transparent"
+            class="text-gray-200"
+        />
+        
+        <!-- Negative segment (Red) -->
+        <circle
+            cx="{{ size / 2 }}"
+            cy="{{ size / 2 }}"
+            r="{{ radius }}"
+            stroke="currentColor"
+            stroke-width="8"
+            fill="transparent"
+            stroke-dasharray="{{ circumference }}"
+            stroke-dashoffset="{{ circumference - neg_stroke }}"
+            class="text-red-400"
+        />
+        
+        <!-- Positive segment (Teal) -->
+        <circle
+            cx="{{ size / 2 }}"
+            cy="{{ size / 2 }}"
+            r="{{ radius }}"
+            stroke="currentColor"
+            stroke-width="8"
+            fill="transparent"
+            stroke-dasharray="{{ circumference }}"
+            stroke-dashoffset="{{ circumference - pos_stroke - neg_stroke }}"
+            class="text-teal-500"
+        />
+    </svg>
+    <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">
+        {{ (pos_per)|round|int }}%
+    </div>
+</div>
+{% endmacro %}

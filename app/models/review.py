@@ -20,6 +20,7 @@ class Review(db.Model):
         default="pending"
     )
     processing_error = db.Column(db.Text, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # Relationships

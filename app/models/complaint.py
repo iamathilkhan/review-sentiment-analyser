@@ -20,6 +20,10 @@ class Complaint(db.Model):
         default="open"
     )
     admin_notes = db.Column(db.Text, nullable=True)
+    severity_override = db.Column(
+        db.Enum("low", "medium", "high", "critical", name="severity_levels"), 
+        nullable=True
+    )
     
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     resolved_at = db.Column(db.DateTime, nullable=True)

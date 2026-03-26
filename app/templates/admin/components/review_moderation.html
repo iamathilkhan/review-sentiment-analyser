@@ -1,0 +1,139 @@
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" x-data="{ moderationOpen: false, selectedReview: null }">
+    <!-- Header -->
+    <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-bold text-gray-900">Review Moderation</h2>
+        <p class="text-sm text-gray-500">Monitor and moderate user feedback across all products</p>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">Product / Seller</th>
+                    <th class="px-6 py-4">Customer Info</th>
+                    <th class="px-6 py-4 text-center">Sentiment / Aspects</th>
+                    <th class="px-6 py-4">Complaint Status</th>
+                    <th class="px-6 py-4">Created At</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <template x-if="reviewLoading">
+                    <template x-for="i in 5">
+                        <tr class="animate-pulse">
+                            <td colspan="6" class="px-6 py-4 h-12 bg-gray-50/50 mb-2 rounded-lg"></td>
+                        </tr>
+                    </template>
+                </template>
+
+                <template x-for="r in reviews" :key="r.id">
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-bold text-gray-900" x-text="r.product.name"></p>
+                            <p class="text-xs text-teal-600 font-bold uppercase tracking-wider" x-text="r.id.substring(0,8)"></p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-medium text-gray-900" x-text="r.user.name"></p>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex flex-col items-center">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase"
+                                    :class="{
+                                        'bg-teal-100 text-teal-700': r.sentiment === 'positive',
+                                        'bg-red-100 text-red-700': r.sentiment === 'negative',
+                                        'bg-gray-100 text-gray-700': r.sentiment === 'neutral' || !r.sentiment
+                                    }" x-text="r.sentiment || 'PENDING'"></span>
+                                <span class="text-[10px] text-gray-400 mt-1 font-bold"><span x-text="r.aspect_count"></span> aspects analyzed</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <template x-if="r.has_complaint">
+                                <span class="px-2 py-1 text-[10px] font-bold rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase"
+                                    x-text="'ALERT: ' + r.complaint_status"></span>
+                            </template>
+                            <template x-if="!r.has_complaint">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">Healthy</span>
+                            </template>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 font-medium" x-text="new Date(r.created_at).toLocaleDateString()"></td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button @click="selectedReview = r; moderationOpen = true"
+                                    class="p-2 hover:bg-teal-50 text-teal-600 rounded-lg transition" title="Moderate">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </button>
+                                <button @click="deleteReview(r.id)"
+                                    class="p-2 hover:bg-red-50 text-red-600 rounded-lg transition" title="Soft-Delete">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Slide-over drawer -->
+    <div x-show="moderationOpen" class="fixed inset-0 overflow-hidden z-[60]" x-transition>
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50 transition-opacity" @click="moderationOpen = false"></div>
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div class="w-screen max-w-md bg-white shadow-2xl overflow-y-auto transform transition-transform"
+                :class="moderationOpen ? 'translate-x-0' : 'translate-x-full'">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-8">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Review Details</h2>
+                            <p class="text-sm text-gray-500" x-text="selectedReview?.id"></p>
+                        </div>
+                        <button @click="moderationOpen = false" class="text-gray-400 hover:text-gray-600 transition">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l18 18"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-8" x-if="selectedReview">
+                        <section>
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Original Content</h3>
+                            <div class="bg-gray-50 p-6 rounded-xl text-gray-800 italic leading-relaxed" x-text="selectedReview.content"></div>
+                        </section>
+
+                        <section>
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Metadata</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gray-100 p-3 rounded-lg">
+                                    <p class="text-[10px] text-gray-500 uppercase font-bold">Product</p>
+                                    <p class="text-xs font-bold text-gray-900 truncate" x-text="selectedReview.product.name"></p>
+                                </div>
+                                <div class="bg-gray-100 p-3 rounded-lg">
+                                    <p class="text-[10px] text-gray-500 uppercase font-bold">User</p>
+                                    <p class="text-xs font-bold text-gray-900 truncate" x-text="selectedReview.user.name"></p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Platform Action</h3>
+                                <template x-if="selectedReview.has_complaint">
+                                    <button @click="currentTab = 'complaints'; complaintFilters.status = ''; fetchComplaints(); moderationOpen = false"
+                                        class="text-xs font-bold text-amber-600 hover:underline">View Active Alert &rarr;</button>
+                                </template>
+                            </div>
+                            <div class="mt-4 p-4 border border-red-100 bg-red-50 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold text-red-700">Flag for Deletion?</p>
+                                    <p class="text-[10px] text-red-600 opacity-80">This action is reversible by admins.</p>
+                                </div>
+                                <button @click="deleteReview(selectedReview.id); moderationOpen = false"
+                                    class="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg shadow hover:bg-red-700 transition">
+                                    SOFT DELETE
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

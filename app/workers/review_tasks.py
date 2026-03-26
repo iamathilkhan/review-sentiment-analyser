@@ -7,7 +7,6 @@ from app.core.extensions import redis_client
 from app.models.review import Review
 from app.models.aspect_sentiment import AspectSentiment
 from app.models.complaint import Complaint
-from app.ml.model_loader import get_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +48,7 @@ def process_review_task(self, review_id: str):
             db.session.commit()
 
             # Call ABSA pipeline
+            from app.ml.model_loader import get_pipeline
             pipeline = get_pipeline()
             result = pipeline.process_review(review.content)
 

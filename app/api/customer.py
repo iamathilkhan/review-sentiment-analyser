@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, g, abort, jsonify
+from flask import Blueprint, render_template, request, abort, jsonify
+from flask_login import login_required, current_user
 from ..models import Review, Product
-from ..core.auth_decorators import login_required, role_required
+from ..core.auth_decorators import role_required
 from sqlalchemy import func
 
 customer_bp = Blueprint('customer', __name__)
@@ -15,7 +16,7 @@ def dashboard():
     page = request.args.get('page', 1, type=int)
     per_page = 10
     
-    pagination = Review.query.filter_by(user_id=g.current_user.id) \
+    pagination = Review.query.filter_by(user_id=current_user.id) \
         .order_by(Review.created_at.desc()) \
         .paginate(page=page, per_page=per_page, error_out=False)
         
@@ -57,7 +58,7 @@ def my_reviews():
     Full view of all customer's reviews.
     """
     page = request.args.get('page', 1, type=int)
-    pagination = Review.query.filter_by(user_id=g.current_user.id) \
+    pagination = Review.query.filter_by(user_id=current_user.id) \
         .order_by(Review.created_at.desc()) \
         .paginate(page=page, per_page=20, error_out=False)
         

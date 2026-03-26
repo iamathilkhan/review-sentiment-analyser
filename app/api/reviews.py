@@ -9,6 +9,12 @@ from ..workers.review_tasks import process_review_task
 
 reviews_bp = Blueprint('reviews', __name__)
 
+@reviews_bp.route('/')
+def index():
+    """Public products landing page."""
+    products = Product.query.limit(10).all()
+    return render_template('public/index.html', products=products)
+
 @reviews_bp.route('/', methods=['POST'])
 @login_required
 @role_required("customer")

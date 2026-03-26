@@ -1,0 +1,112 @@
+<div class="space-y-6" x-show="activeTab === 'aspects'" x-cloak>
+    <div class="bg-white border-b border-gray-100 py-6 sticky top-16 z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h2 class="text-2xl font-bold text-gray-900">Aspect Intelligence</h2>
+                <div class="flex items-center space-x-1.5 px-3 py-1 bg-teal-50 text-teal-700 rounded-full border border-teal-100 text-sm font-semibold">
+                    <span class="pulse-emerald"></span>
+                    <span x-text="aspects.length + ' Categories Detected'"></span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 bg-gray-100 p-1.5 rounded-xl border border-gray-200">
+                <button 
+                @click="aspectSort = 'mentions'" 
+                :class="aspectSort === 'mentions' ? 'bg-white text-gray-900 shadow-sm border-gray-300' : 'text-gray-500 hover:text-gray-700'"
+                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all border border-transparent">Most Mentions</button>
+                <button 
+                @click="aspectSort = 'negative'" 
+                :class="aspectSort === 'negative' ? 'bg-white text-red-600 shadow-sm border-gray-300' : 'text-gray-500 hover:text-red-500'"
+                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all border border-transparent">Critical First</button>
+                <button 
+                @click="aspectSort = 'positive'" 
+                :class="aspectSort === 'positive' ? 'bg-white text-teal-600 shadow-sm border-gray-300' : 'text-gray-500 hover:text-teal-500'"
+                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all border border-transparent">Winning First</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="aspectsLoading" class="py-24 text-center">
+        <div class="inline-block animate-spin border-4 border-teal-500 border-t-transparent rounded-full w-12 h-12 mb-4"></div>
+        <p class="text-gray-500 font-medium">Crunching sentiment data...</p>
+    </div>
+
+    <!-- Aspects Grid -->
+    <div x-show="!aspectsLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-24">
+        <template x-for="aspect in sortedAspects" :key="aspect.aspect_category">
+            <div 
+                :class="aspect.positive_count > aspect.negative_count ? 'border-teal-100 bg-teal-50/20' : 'border-red-100 bg-red-50/20'"
+                class="p-5 rounded-2xl border flex flex-col transition-all cursor-default"
+            >
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="text-sm font-bold text-gray-900" x-text="aspect.aspect_category"></h4>
+                    <span 
+                        :class="aspect.recent_trend === 'improving' ? 'text-teal-600 bg-teal-100' : (aspect.recent_trend === 'declining' ? 'text-red-600 bg-red-100' : 'text-gray-500 bg-gray-100')"
+                        class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider"
+                        x-text="aspect.recent_trend === 'stable' ? 'Stable' : aspect.recent_trend"
+                    ></span>
+                </div>
+                
+                <div class="flex-grow space-y-4">
+                    <!-- Sentiment Bar -->
+                    <div>
+                        <div class="flex h-2.5 w-full bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                            <div 
+                                class="h-full bg-teal-500 transition-all duration-700" 
+                                :style="`width: ${(aspect.positive_count / (aspect.positive_count + aspect.negative_count + aspect.neutral_count) * 100)}%`"
+                            ></div>
+                            <div 
+                                class="h-full bg-gray-300 transition-all duration-700" 
+                                :style="`width: ${(aspect.neutral_count / (aspect.positive_count + aspect.negative_count + aspect.neutral_count) * 100)}%`"
+                            ></div>
+                            <div 
+                                class="h-full bg-red-400 transition-all duration-700" 
+                                :style="`width: ${(aspect.negative_count / (aspect.positive_count + aspect.negative_count + aspect.neutral_count) * 100)}%`"
+                            ></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] mt-2 font-bold text-gray-500">
+                             <span class="text-teal-600" x-text="Math.round(aspect.positive_count) + ' Positive'"></span>
+                             <span class="text-red-500" x-text="Math.round(aspect.negative_count) + ' Critical'"></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/80 backdrop-blur rounded-xl p-3 border border-gray-100 shadow-sm">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">Detected Terms</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <template x-for="term in aspect.sample_terms" :key="term">
+                                <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-medium" x-text="term"></span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-[11px] font-bold text-gray-400">
+                     <span class="flex items-center">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span x-text="(aspect.avg_confidence * 100).toFixed(0) + '% Confidence'"></span>
+                     </span>
+                     <span x-text="(aspect.positive_count + aspect.negative_count + aspect.neutral_count) + ' Total Samples'"></span>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<style>
+.pulse-emerald {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    margin-right: 4px;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+</style>

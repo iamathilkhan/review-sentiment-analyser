@@ -1,0 +1,88 @@
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Header -->
+    <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">User Directory</h2>
+            <p class="text-sm text-gray-500">Manage account access and roles</p>
+        </div>
+        <div class="relative w-full md:w-64">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </span>
+            <input type="text" x-model="userSearch" @input.debounce.300ms="fetchUsers()"
+                class="block w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-teal-500"
+                placeholder="Search name or email...">
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">User Info</th>
+                    <th class="px-6 py-4">Role</th>
+                    <th class="px-6 py-4">Joined At</th>
+                    <th class="px-6 py-4">Review Count</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4 text-center">Active</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <template x-if="userLoading">
+                    <template x-for="i in 5">
+                        <tr class="animate-pulse">
+                            <td colspan="6" class="px-6 py-4 h-12 bg-gray-50/50 mb-2 rounded-lg"></td>
+                        </tr>
+                    </template>
+                </template>
+
+                <template x-for="u in users" :key="u.id">
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="px-6 py-4 flex items-center">
+                            <div class="h-10 w-10 flex-shrink-0 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center font-bold text-sm mr-4">
+                                <span x-text="u.name[0].toUpperCase()"></span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900" x-text="u.name"></p>
+                                <p class="text-xs text-gray-500" x-text="u.email"></p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-[10px] font-bold rounded-full uppercase"
+                                :class="{
+                                    'bg-blue-100 text-blue-700': u.role === 'customer',
+                                    'bg-purple-100 text-purple-700': u.role === 'seller',
+                                    'bg-red-100 text-red-700': u.role === 'admin'
+                                }" x-text="u.role"></span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500" x-text="new Date(u.joined_at).toLocaleDateString()"></td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <span class="text-sm font-bold text-gray-900" x-text="u.review_count"></span>
+                                <span class="ml-1 text-xs text-gray-400">total</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                :class="u.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                <span x-text="u.is_active ? 'ENABLED' : 'DISABLED'"></span>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <!-- Toggle switch -->
+                            <div class="flex justify-center">
+                                <button @click="if(confirm('Toggle user status?')) { u.is_active = !u.is_active; toggleUser(u.id, u.is_active) }"
+                                    class="relative inline-flex flex-shrink-0 h-5 w-10 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                                    :class="u.is_active ? 'bg-teal-600' : 'bg-gray-200'">
+                                    <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                                        :class="u.is_active ? 'translate-x-5' : 'translate-x-0'"></span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</div>

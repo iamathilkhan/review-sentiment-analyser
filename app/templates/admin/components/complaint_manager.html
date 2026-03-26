@@ -1,0 +1,169 @@
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Filter bar -->
+    <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <h2 class="text-xl font-bold text-gray-900">Complaint Management</h2>
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-full" x-text="complaints.length"></span>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <select x-model="complaintFilters.severity" @change="fetchComplaints()" class="bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                <option value="">All Severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <select x-model="complaintFilters.status" @change="fetchComplaints()" class="bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-teal-500">
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+            </select>
+            <button @click="fetchComplaints()" class="p-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">Complaint / Severity</th>
+                    <th class="px-6 py-4">Product / Seller</th>
+                    <th class="px-6 py-4">Customer</th>
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <template x-if="complaintLoading">
+                    <template x-for="i in 5">
+                        <tr class="animate-pulse">
+                            <td colspan="6" class="px-6 py-4 h-12 bg-gray-50/50 mb-2 rounded-lg"></td>
+                        </tr>
+                    </template>
+                </template>
+                
+                <template x-if="!complaintLoading && complaints.length === 0">
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            <div class="mb-4 text-4xl">🎉</div>
+                            <p class="font-bold">No open complaints — great work!</p>
+                            <p class="text-sm">Everything seems to be running smoothly.</p>
+                        </td>
+                    </tr>
+                </template>
+
+                <template x-for="c in complaints" :key="c.id">
+                    <tbody class="contents" x-data="{ expanded: false }">
+                        <tr class="hover:bg-gray-50/80 transition-colors cursor-pointer" 
+                            :class="expanded ? 'bg-gray-50' : ''"
+                            @click="expanded = !expanded">
+                            <td class="px-6 py-4 border-l-4"
+                                :class="{
+                                    'border-red-600': c.severity === 'critical',
+                                    'border-orange-500': c.severity === 'high',
+                                    'border-amber-400': c.severity === 'medium',
+                                    'border-gray-300': c.severity === 'low'
+                                }">
+                                <div class="flex items-center">
+                                    <div class="mr-3 p-1 rounded-full"
+                                        :class="{
+                                            'bg-red-100 text-red-600': c.severity === 'critical',
+                                            'bg-orange-100 text-orange-600': c.severity === 'high',
+                                            'bg-amber-100 text-amber-600': c.severity === 'medium',
+                                            'bg-gray-100 text-gray-600': c.severity === 'low'
+                                        }">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" /></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900 capitalize" x-text="c.severity"></p>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5" x-text="c.id.substring(0,8)"></p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-semibold text-gray-900" x-text="c.product.name"></p>
+                                <p class="text-xs text-teal-600" x-text="c.product.id.substring(0,8)"></p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-medium text-gray-900" x-text="c.user.name"></p>
+                                <p class="text-xs text-gray-500 line-clamp-1" x-text="c.user.email"></p>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500" x-text="new Date(c.created_at).toLocaleDateString()"></td>
+                            <td class="px-6 py-4">
+                                <select @click.stop @change="updateComplaint(c.id, {status: $event.target.value})"
+                                    class="text-xs font-bold rounded-full px-3 py-1 border-none focus:ring-0 cursor-pointer"
+                                    :class="{
+                                        'bg-red-50 text-red-700': c.status === 'open',
+                                        'bg-blue-50 text-blue-700': c.status === 'in_progress',
+                                        'bg-green-50 text-green-700': c.status === 'resolved',
+                                        'bg-gray-100 text-gray-600': c.status === 'closed'
+                                    }">
+                                    <option value="open" :selected="c.status === 'open'">OPEN</option>
+                                    <option value="in_progress" :selected="c.status === 'in_progress'">ONGOING</option>
+                                    <option value="resolved" :selected="c.status === 'resolved'">RESOLVED</option>
+                                    <option value="closed" :selected="c.status === 'closed'">CLOSED</option>
+                                </select>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button class="text-gray-400 hover:text-teal-600 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Expanded Content -->
+                        <tr x-show="expanded" x-transition>
+                            <td colspan="6" class="px-10 py-6 bg-gray-50/50 border-l-4 border-gray-200">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Review Evidence</h4>
+                                        <p class="text-sm text-gray-700 italic border-l-2 border-teal-200 pl-4 py-1" x-text="c.review.content"></p>
+                                        
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            <template x-for="a in c.review.aspects" :key="a.category">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold border"
+                                                    :class="a.polarity === 'negative' ? 'bg-red-50 text-red-700 border-red-100' : (a.polarity === 'positive' ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-gray-50 text-gray-600 border-gray-100')">
+                                                    <span x-text="a.category" class="mr-1"></span>
+                                                    <span x-text="a.polarity === 'negative' ? '↓' : (a.polarity === 'positive' ? '↑' : '•')"></span>
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Admin Overrides</h4>
+                                            <div class="space-y-3">
+                                                <select @change="updateComplaint(c.id, {severity_override: $event.target.value})"
+                                                    class="block w-full text-xs font-bold bg-white border border-gray-200 rounded-lg focus:ring-teal-500">
+                                                    <option value="">No Override</option>
+                                                    <option value="critical" :selected="c.severity_override === 'critical'">CRITICAL (Manual)</option>
+                                                    <option value="high" :selected="c.severity_override === 'high'">HIGH (Manual)</option>
+                                                    <option value="medium" :selected="c.severity_override === 'medium'">MEDIUM (Manual)</option>
+                                                    <option value="low" :selected="c.severity_override === 'low'">LOW (Manual)</option>
+                                                </select>
+                                                
+                                                <textarea 
+                                                    @blur="if($event.target.value) updateComplaint(c.id, {admin_notes: $event.target.value}); $event.target.value=''"
+                                                    class="w-full text-xs border-gray-200 rounded-lg focus:ring-teal-500" 
+                                                    placeholder="Add internal resolution notes (autosafe on blur)..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div x-show="c.admin_notes" class="mt-4">
+                                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Internal History</h4>
+                                            <div class="text-[10px] text-gray-500 whitespace-pre-wrap max-h-24 overflow-y-auto bg-white p-2 border border-gray-100 rounded-lg" x-text="c.admin_notes"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</div>

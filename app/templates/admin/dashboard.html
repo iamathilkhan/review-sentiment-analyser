@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ReviewAI{% endblock %}
+
+{% block extra_head %}
+<!-- Stat counting animation utility -->
+<script>
+    function countUp(target, duration = 1000) {
+        return {
+            current: 0,
+            target: target,
+            init() {
+                let start = 0;
+                let end = this.target;
+                let range = end - start;
+                let increment = end > start ? 1 : -1;
+                let stepTime = Math.abs(Math.floor(duration / range));
+                let timer = setInterval(() => {
+                    this.current += increment;
+                    if (this.current == end) clearInterval(timer);
+                }, stepTime || 1);
+            }
+        }
+    }
+</script>
+<style>
+    .admin-sidebar-link.active {
+        @apply bg-red-50 text-red-700 border-red-500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-[calc(100vh-8rem)] overflow-hidden" x-data="adminPanel()">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0">
+        <div class="p-6">
+            <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Platform Control</h2>
+            <nav class="space-y-1">
+                <template x-for="tab in tabs" :key="tab.id">
+                    <button @click="currentTab = tab.id"
+                        class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors border-l-4"
+                        :class="currentTab === tab.id ? 'bg-red-50 text-red-700 border-red-500' : 'text-gray-600 hover:bg-gray-50 border-transparent'">
+                        <span x-html="tab.icon" class="mr-3"></span>
+                        <span x-text="tab.name"></span>
+                    </button>
+                </template>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Pane -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-8">
+        <!-- Tab Content -->
+        <div x-show="currentTab === 'overview'" x-transition>
+            {% include 'admin/components/overview_stats.html' %}
+        </div>
+        
+        <div x-show="currentTab === 'complaints'" x-init="fetchComplaints()" x-transition>
+            {% include 'admin/components/complaint_manager.html' %}
+        </div>
+
+        <div x-show="currentTab === 'users'" x-init="fetchUsers()" x-transition>
+            {% include 'admin/components/user_manager.html' %}
+        </div>
+
+        <div x-show="currentTab === 'reviews'" x-init="fetchReviews()" x-transition>
+            {% include 'admin/components/review_moderation.html' %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function adminPanel() {
+        return {
+            currentTab: 'overview',
+            tabs: [
+                { id: 'overview', name: 'Overview', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>' },
+                { id: 'complaints', name: 'Complaints', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>' },
+                { id: 'users', name: 'Users', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>' },
+                { id: 'reviews', name: 'Reviews', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>' }
+            ],
+            
+            // State for Complaints
+            complaints: [],
+            complaintLoading: false,
+            complaintFilters: { severity: '', status: '' },
+            
+            // State for Users
+            users: [],
+            userLoading: false,
+            userSearch: '',
+            
+            // State for Reviews
+            reviews: [],
+            reviewLoading: false,
+
+            async fetchComplaints() {
+                this.complaintLoading = true;
+                const params = new URLSearchParams(this.complaintFilters);
+                try {
+                    const res = await fetch(`/admin/complaints?${params.toString()}`);
+                    const data = await res.json();
+                    this.complaints = data.items;
+                } catch (e) { console.error(e); }
+                finally { this.complaintLoading = false; }
+            },
+
+            async updateComplaint(id, payload) {
+                try {
+                    await fetch(`/admin/complaints/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+                        body: JSON.stringify(payload)
+                    });
+                    this.fetchComplaints();
+                } catch (e) { console.error(e); }
+            },
+
+            async fetchUsers() {
+                this.userLoading = true;
+                try {
+                    const res = await fetch(`/admin/users?search=${this.userSearch}`);
+                    const data = await res.json();
+                    this.users = data.items;
+                } catch (e) { console.error(e); }
+                finally { this.userLoading = false; }
+            },
+
+            async toggleUser(id, isActive) {
+                try {
+                    await fetch(`/admin/users/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ is_active: isActive })
+                    });
+                } catch (e) { console.error(e); }
+            },
+
+            async fetchReviews() {
+                this.reviewLoading = true;
+                try {
+                    const res = await fetch('/admin/reviews');
+                    const data = await res.json();
+                    this.reviews = data.items;
+                } catch (e) { console.error(e); }
+                finally { this.reviewLoading = false; }
+            },
+
+            async deleteReview(id) {
+                if (!confirm('Are you sure you want to soft-delete this review?')) return;
+                try {
+                    await fetch(`/admin/reviews/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+                    });
+                    this.fetchReviews();
+                } catch (e) { console.error(e); }
+            }
+        }
+    }
+</script>
+{% endblock %}

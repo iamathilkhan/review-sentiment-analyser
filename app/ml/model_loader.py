@@ -10,27 +10,23 @@ logger = logging.getLogger(__name__)
 def get_pipeline() -> ABSAPipeline:
     """
     Singleton loader for the ABSA Pipeline.
-    Loads model once and performs warm-up inference.
+    Loads model once; falls back to rule-based logic if dependencies/weights missing.
     """
     global _pipeline
     
     if _pipeline is None:
         try:
-            print("Initializing ABSA Pipeline (this may take a while if downloading weights)...")
+            from .absa_model import ABSAModel
+            print("Initializing AI Engine (this may take a while)...")
             model = ABSAModel()
             _pipeline = ABSAPipeline(model)
-            
-            # Warm-up inference
-            print("Performing warm-up inference...")
-            warmup_text = "Great product with amazing battery life"
-            _pipeline.process_review(warmup_text)
-            print("ABSA Pipeline loaded successfully.")
-            
-        except Exception as e:
-            logger.error(f"Failed to load ABSA Pipeline: {e}")
-            # We return None so the caller can decide to use fallback.py
-            _pipeline = None
-            raise e
+            print("AI Engine loaded successfully.")
+        except (Exception, ImportError):
+            print("ML weights or dependencies (TensorFlow/Transformers) not found. Falling back to rule-based engine.")
+            from .fallback import FallbackPipeline
+            # Wrap FallbackPipeline to maintain same interface as ABSAPipeline if needed
+            # but FallbackPipeline in the codebase already has process_review
+            _pipeline = FallbackPipeline()
             
     return _pipeline
 

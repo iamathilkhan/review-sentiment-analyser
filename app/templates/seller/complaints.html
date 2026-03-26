@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Management | Review Intelligence{% endblock %}
+
+{% block content %}
+<div class="py-12 text-center">
+    <div class="text-6xl mb-6">📂</div>
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Complaint Inbox</h1>
+    <p class="text-gray-500 max-w-2xl mx-auto mb-8 font-medium">To access the full interactive complaint suite with severity filtering and resolution tracking, please use the main dashboard suite.</p>
+    <a href="{{ url_for('seller.dashboard') }}" class="bg-teal-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-teal-700 transition shadow-lg shadow-teal-100">
+        Open Seller Dashboard
+    </a>
+</div>
+{% endblock %}
