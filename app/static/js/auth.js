@@ -61,8 +61,9 @@ const authService = {
             // Role-based redirection logic
             const role = data.user.role;
             let redirect = '/';
-            if (role === 'admin') redirect = '/admin';
-            else if (role === 'seller') redirect = '/seller';
+            if (role === 'admin') redirect = '/admin/overview';
+            else if (role === 'seller') redirect = '/seller/overview';
+            else if (role === 'customer') redirect = '/dashboard/';
             
             return { ...data, redirect };
         });

@@ -24,7 +24,7 @@ def dashboard():
                            reviews=pagination.items, 
                            pagination=pagination)
 
-@customer_bp.route('/product/<product_id>/review')
+@customer_bp.route('/product/<uuid:product_id>/review')
 @login_required
 @role_required("customer")
 def product_review(product_id):
@@ -76,4 +76,33 @@ def get_review_result_partial(review_id):
     if not (review and review.status == "done"):
         return "", 204
         
-    return render_template('components/aspect_result_card.html', review=review)
+@customer_bp.route('/predict_emotion', methods=['POST'])
+@login_required
+@role_required("customer")
+def predict_emotion():
+    """Predicts emotions based on in-progress review text."""
+    data = request.get_json()
+    if not data or 'text' not in data:
+        return jsonify({"emotions": []})
+        
+    text = data['text'].lower()
+    emotions_found = set()
+    
+    # Basic keyword-based pseudo-prediction for emotions
+    if any(word in text for word in ['happy', 'glad', 'yay', 'great', 'awesome', 'amazing', 'love', 'perfect']):
+        emotions_found.add("Happy")
+    if any(word in text for word in ['satisfied', 'good', 'nice', 'decent', 'fine', 'okay', 'expected']):
+        emotions_found.add("Satisfied")
+    if any(word in text for word in ['angry', 'mad', 'furious', 'terrible', 'horrible', 'worst', 'hate', 'awful']):
+        emotions_found.add("Angry")
+    if any(word in text for word in ['sad', 'disappointed', 'upset', 'let down', 'sadly', 'regret']):
+        emotions_found.add("Disappointed")
+    if any(word in text for word in ['confused', 'weird', 'strange', 'bizarre', 'puzzled', 'odd']):
+        emotions_found.add("Confused")
+    if any(word in text for word in ['excited', 'thrilled', 'wow', 'incredible', 'stunning']):
+        emotions_found.add("Excited")
+        
+    if not emotions_found and len(text) > 10:
+        emotions_found.add("Neutral")
+        
+    return jsonify({"emotions": list(emotions_found)})

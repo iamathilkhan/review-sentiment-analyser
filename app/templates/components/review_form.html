@@ -15,7 +15,16 @@
                 minlength="20"
                 maxlength="2000"
             ></textarea>
-            <div class="form-text d-flex justify-content-between">
+            
+            <!-- Emotion Detector Area -->
+            <div id="emotion-suggester" class="mt-2 d-none">
+                <span class="text-sm font-semibold text-teal-600 mb-1 d-block"><i class="bi bi-magic"></i> Detected Emotions (Click to confirm)</span>
+                <div id="emotion-pills" class="d-flex flex-wrap gap-2"></div>
+                <input type="hidden" name="confirmed_emotions" id="confirmed_emotions" value="[]">
+            </div>
+
+            <div class="form-text d-flex justify-content-between mt-2">
+
                 <span id="char-count-msg" class="text-muted">Minimum 20 characters required.</span>
                 <span id="char-counter"><span id="current-count">0</span> / 2000</span>
             </div>
@@ -42,6 +51,100 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/review_submit.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.getElementById('review-content');
+        const emotionContainer = document.getElementById('emotion-suggester');
+        const emotionPills = document.getElementById('emotion-pills');
+        let debounceTimer;
+        let confirmedEmotions = new Set(); // Store user confirmations
+
+        textarea.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const text = this.value;
+            
+            if (text.length > 5) {
+                debounceTimer = setTimeout(() => predictEmotions(text), 500);
+            } else {
+                emotionContainer.classList.add('d-none');
+            }
+        });
+
+        async function predictEmotions(text) {
+            try {
+                const response = await fetch('/customer/predict_emotion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    },
+                    body: JSON.stringify({text: text})
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.emotions && data.emotions.length > 0) {
+                        // Only add newly predicted emotions that aren't already confirmed
+                        renderEmotions(data.emotions);
+                        emotionContainer.classList.remove('d-none');
+                    } else if (confirmedEmotions.size === 0) {
+                        emotionContainer.classList.add('d-none');
+                    }
+                }
+            } catch (err) {
+                console.error("Emotion prediction failed:", err);
+            }
+        }
+
+        function renderEmotions(emotions) {
+            // Keep existing confirmed pills, clear others
+            const existingConfirmed = Array.from(emotionPills.children)
+                .filter(btn => btn.classList.contains('bg-teal-600'))
+                .map(btn => btn.dataset.emotion);
+                
+            emotionPills.innerHTML = '';
+            
+            // Render all unique emotions (predicted + confirmed)
+            const allEmotions = new Set([...emotions, ...existingConfirmed, ...confirmedEmotions]);
+            
+            allEmotions.forEach(emotion => {
+                const isConfirmed = confirmedEmotions.has(emotion);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.dataset.emotion = emotion;
+                
+                if (isConfirmed) {
+                    btn.className = 'badge rounded-pill bg-teal-600 text-white border hover:-translate-y-1 transition shadow-sm';
+                    btn.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${emotion}`;
+                } else {
+                    btn.className = 'badge rounded-pill bg-light text-dark border hover:-translate-y-1 transition';
+                    btn.textContent = emotion;
+                }
+                
+                btn.style.cursor = 'pointer';
+                btn.onclick = () => toggleConfirmEmotion(emotion);
+                emotionPills.appendChild(btn);
+            });
+        }
+
+        function toggleConfirmEmotion(emotion) {
+            if (confirmedEmotions.has(emotion)) {
+                confirmedEmotions.delete(emotion);
+            } else {
+                confirmedEmotions.add(emotion);
+                // Optional UI feedback
+                if (window.showToast) {
+                    showToast("Emotion confirmed! This helps train our AI.", "success");
+                }
+            }
+            // Update hidden input
+            document.getElementById('confirmed_emotions').value = JSON.stringify(Array.from(confirmedEmotions));
+            // Re-render pills
+            const currentPills = Array.from(emotionPills.children).map(btn => btn.dataset.emotion);
+            renderEmotions(currentPills);
+        }
+    });
+</script>
 <style>
     .review-overlay {
         background: rgba(255, 255, 255, 0.9);

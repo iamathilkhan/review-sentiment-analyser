@@ -20,14 +20,14 @@ def seed_demo_data():
     with app.app_context():
         db.create_all()
         # Clean existing test data if any for these emails
-        seller_email = "seller@demo.com"
+        seller_email = "seller@gmail.com"
         # 1. Create Seller
         seller = User.query.filter_by(email=seller_email).first()
         if not seller:
             seller = User(
                 id=uuid.uuid4(),
                 email=seller_email,
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password("seller123"),
                 name="Elite Gadget Co.",
                 role="seller"
             )
@@ -36,7 +36,7 @@ def seed_demo_data():
             print(f"Created seller: {seller_email}")
 
         # 1.1 Create Admin
-        admin_email = "admin@demo.com"
+        admin_email = "admin@gmail.com"
         admin = User.query.filter_by(email=admin_email).first()
         if not admin:
             admin = User(
@@ -49,6 +49,21 @@ def seed_demo_data():
             db.session.add(admin)
             db.session.commit()
             print(f"Created admin: {admin_email}")
+
+        # 1.2 Create Customer
+        customer_email = "khan@gmail.com"
+        customer = User.query.filter_by(email=customer_email).first()
+        if not customer:
+            customer = User(
+                id=uuid.uuid4(),
+                email=customer_email,
+                hashed_password=hash_password("khan123"),
+                name="Khan",
+                role="customer"
+            )
+            db.session.add(customer)
+            db.session.commit()
+            print(f"Created customer: {customer_email}")
         
         # 2. Create Products
         p1 = Product(id=uuid.uuid4(), seller_id=seller.id, name="Pro Headphones X", category="Audio")

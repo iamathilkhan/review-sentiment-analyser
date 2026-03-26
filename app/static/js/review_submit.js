@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             
             try {
+                const confirmedEmotionsInput = form.querySelector('#confirmed_emotions');
+                const confirmedEmotions = confirmedEmotionsInput ? JSON.parse(confirmedEmotionsInput.value) : [];
+
                 const response = await fetch('/reviews/', {
                     method: 'POST',
                     headers: {
@@ -45,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({
                         product_id: productId,
-                        content: content
+                        content: content,
+                        confirmed_emotions: confirmedEmotions
                     })
                 });
 
