@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort, jsonify
+from flask import Blueprint, render_template, request, abort, jsonify, current_app
 from flask_login import login_required, current_user
 from ..models import Review, Product
 from ..core.auth_decorators import role_required
@@ -66,7 +66,7 @@ def my_reviews():
                            reviews=pagination.items,
                            pagination=pagination)
 
-@customer_bp.route('/reviews/<review_id>/result-partial', methods=['GET'])
+@customer_bp.route('/reviews/<uuid:review_id>/result-partial', methods=['GET'])
 @login_required
 def get_review_result_partial(review_id):
     """
@@ -78,31 +78,20 @@ def get_review_result_partial(review_id):
         
 @customer_bp.route('/predict_emotion', methods=['POST'])
 @login_required
-@role_required("customer")
 def predict_emotion():
-    """Predicts emotions based on in-progress review text."""
-    data = request.get_json()
+    """Predicts emotions using NLP (DistilRoBERTa or VADER fallback). JWT-auth only."""
+    data = request.get_json(silent=True)
     if not data or 'text' not in data:
         return jsonify({"emotions": []})
-        
-    text = data['text'].lower()
-    emotions_found = set()
-    
-    # Basic keyword-based pseudo-prediction for emotions
-    if any(word in text for word in ['happy', 'glad', 'yay', 'great', 'awesome', 'amazing', 'love', 'perfect']):
-        emotions_found.add("Happy")
-    if any(word in text for word in ['satisfied', 'good', 'nice', 'decent', 'fine', 'okay', 'expected']):
-        emotions_found.add("Satisfied")
-    if any(word in text for word in ['angry', 'mad', 'furious', 'terrible', 'horrible', 'worst', 'hate', 'awful']):
-        emotions_found.add("Angry")
-    if any(word in text for word in ['sad', 'disappointed', 'upset', 'let down', 'sadly', 'regret']):
-        emotions_found.add("Disappointed")
-    if any(word in text for word in ['confused', 'weird', 'strange', 'bizarre', 'puzzled', 'odd']):
-        emotions_found.add("Confused")
-    if any(word in text for word in ['excited', 'thrilled', 'wow', 'incredible', 'stunning']):
-        emotions_found.add("Excited")
-        
-    if not emotions_found and len(text) > 10:
-        emotions_found.add("Neutral")
-        
-    return jsonify({"emotions": list(emotions_found)})
+
+    text = data.get('text', '').strip()
+    if len(text) < 5:
+        return jsonify({"emotions": []})
+
+    try:
+        from ..ml.emotion_detector import predict_emotions
+        results = predict_emotions(text, top_k=5)
+        return jsonify({"emotions": results})
+    except Exception as e:
+        current_app.logger.error(f'Emotion prediction error: {e}')
+        return jsonify({"emotions": [], "error": str(e)}), 500

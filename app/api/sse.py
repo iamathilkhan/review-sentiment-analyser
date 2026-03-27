@@ -7,8 +7,8 @@ from ..models.user import User
 
 sse_bp = Blueprint('sse', __name__)
 
-@sse_bp.route('/review/<review_id>')
-def review_progress_sse(review_id):
+@sse_bp.route('/review/<uuid:review_id>')
+def review_events(review_id):
     """
     SSE endpoint to track review processing progress.
     Expects JWT token in query param for auth.

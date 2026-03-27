@@ -21,8 +21,8 @@ def index():
 @rate_limit(limit=10, window=3600)
 def submit_review():
     """
-    Submit a review for analysis.
-    Validates content length and enqueues a Celery task.
+    Submit a review, run sentiment analysis synchronously via ABSA pipeline,
+    and persist confirmed_emotions for model retraining.
     """
     data = request.get_json()
     if not data:
@@ -30,6 +30,7 @@ def submit_review():
         
     product_id = data.get('product_id')
     content = data.get('content')
+    confirmed_emotions_raw = data.get('confirmed_emotions', [])  # List of label strings from frontend
     
     if not product_id or not content:
         return jsonify({"error": "Product ID and content are required"}), 400
@@ -37,33 +38,88 @@ def submit_review():
     # Validation: 20-2000 chars
     if not (20 <= len(content) <= 2000):
         return jsonify({"error": "Content must be between 20 and 2000 characters"}), 422
-        
+    
+    # Validate confirmed_emotions is a list of strings
+    if not isinstance(confirmed_emotions_raw, list):
+        confirmed_emotions_raw = []
+    confirmed_emotions_clean = [str(e) for e in confirmed_emotions_raw if isinstance(e, (str, dict))]
+
     try:
+        # Parse product_id
+        try:
+            pid = uuid.UUID(str(product_id))
+        except ValueError:
+            return jsonify({"error": "Invalid Product ID"}), 400
+
+        # Ensure product exists
+        product = Product.query.get(pid)
+        if not product:
+            return jsonify({"error": "Product not found"}), 404
+
+        # Create review
         review = Review(
-            product_id=uuid.UUID(product_id),
+            product_id=pid,
             user_id=g.current_user.id,
             content=content,
-            status="pending"
+            status="processing",
+            confirmed_emotions=json.dumps(confirmed_emotions_clean) if confirmed_emotions_clean else None
         )
         db.session.add(review)
+        db.session.flush()  # Get review.id without committing
+
+        # Run ABSA pipeline synchronously (avoids Celery/Redis dependency in dev)
+        try:
+            from ..ml.model_loader import get_pipeline
+            from ..models.aspect_sentiment import AspectSentiment
+            pipeline = get_pipeline()
+            result = pipeline.process_review(content)
+
+            for aspect in result.aspects:
+                db.session.add(AspectSentiment(
+                    review_id=review.id,
+                    aspect_category=aspect.aspect_category,
+                    aspect_term=aspect.aspect_term,
+                    polarity=aspect.polarity,
+                    confidence=aspect.confidence
+                ))
+
+            review.overall_sentiment = result.overall_sentiment
+            review.status = "done"
+
+        except Exception as pipeline_err:
+            # If ML fails entirely, try to infer from confirmed emotions
+            neg_emotions = {'Angry', 'Disappointed', 'Disgusted', 'Fearful'}
+            pos_emotions = {'Happy', 'Excited', 'Satisfied'}
+            
+            # Simple voting if confirmed emotions exist
+            if confirmed_emotions_clean:
+                if any(e in neg_emotions for e in confirmed_emotions_clean):
+                    review.overall_sentiment = "negative"
+                elif any(e in pos_emotions for e in confirmed_emotions_clean):
+                    review.overall_sentiment = "positive"
+                else:
+                    review.overall_sentiment = "neutral"
+            else:
+                review.overall_sentiment = "neutral"
+                
+            review.status = "done"
+            review.processing_error = str(pipeline_err)
+
         db.session.commit()
-        
-        # Enqueue analysis task
-        process_review_task.delay(str(review.id))
-        
+
         return jsonify({
             "review_id": str(review.id),
-            "status": "pending",
-            "message": "Review queued for analysis"
-        }), 202
+            "status": review.status,
+            "overall_sentiment": review.overall_sentiment,
+            "confirmed_emotions": confirmed_emotions_clean,
+            "message": "Review submitted and analysed successfully!"
+        }), 201
         
-    except ValueError:
-        return jsonify({"error": "Invalid Product ID format"}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@reviews_bp.route('/<review_id>/status', methods=['GET'])
+@reviews_bp.route('/<uuid:review_id>/status', methods=['GET'])
 @login_required
 def get_review_status(review_id):
     """
@@ -106,7 +162,7 @@ def get_review_status(review_id):
         ] if review.status == "done" else None
     })
 
-@reviews_bp.route('/product/<product_id>', methods=['GET'])
+@reviews_bp.route('/product/<uuid:product_id>', methods=['GET'])
 def get_product_reviews(product_id):
     """
     Get a list of reviews for a product with pagination.

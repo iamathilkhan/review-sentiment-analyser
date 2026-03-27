@@ -20,6 +20,7 @@ class Review(db.Model):
         default="pending"
     )
     processing_error = db.Column(db.Text, nullable=True)
+    confirmed_emotions = db.Column(db.Text, nullable=True)  # JSON list of user-confirmed emotion labels
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
@@ -36,6 +37,16 @@ class Review(db.Model):
         db.Index("ix_reviews_user_id", "user_id"),
         db.Index("ix_reviews_created_at", "created_at"),
     )
+
+    @property
+    def confirmed_emotions_list(self) -> list[str]:
+        if not self.confirmed_emotions:
+            return []
+        try:
+            import json
+            return json.loads(self.confirmed_emotions)
+        except Exception:
+            return []
 
     def __repr__(self) -> str:
         return f"<Review {str(self.id)[:8]}... ({self.status})>"

@@ -7,13 +7,16 @@
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
     <!-- Product Header -->
-    <header class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+    <header
+        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
             <nav class="mb-2">
-                <span class="text-[10px] font-bold tracking-widest text-teal-600 uppercase">{{ product.category }}</span>
+                <span class="text-[10px] font-bold tracking-widest text-teal-600 uppercase">{{ product.category
+                    }}</span>
             </nav>
             <h1 class="text-3xl font-bold text-gray-900">{{ product.name }}</h1>
-            <p class="text-gray-500 text-sm mt-1">Provided by <span class="font-semibold text-gray-700">{{ product.seller.username }}</span></p>
+            <p class="text-gray-500 text-sm mt-1">Provided by <span class="font-semibold text-gray-700">{{
+                    product.seller.name }}</span></p>
         </div>
         <div class="flex flex-col items-center md:items-end">
             <div class="text-3xl font-black text-teal-600">
@@ -36,31 +39,32 @@
             <section class="space-y-6">
                 <div class="flex justify-between items-center px-2">
                     <h2 class="text-xl font-bold text-gray-900">Recent Customer Feedback</h2>
-                    <div class="text-xs text-gray-400 font-medium">Sort by: <span class="text-teal-600 cursor-pointer">Newest First</span></div>
+                    <div class="text-xs text-gray-400 font-medium">Sort by: <span
+                            class="text-teal-600 cursor-pointer">Newest First</span></div>
                 </div>
-                
+
                 {% if reviews %}
-                    {% for review in reviews %}
-                        {{ review_card(review) }}
-                    {% endfor %}
-                    
-                    {% if pagination.pages > 1 %}
-                    <div class="flex justify-center pt-4">
-                        <nav class="flex space-x-2">
-                            {% for p in range(1, pagination.pages + 1) %}
-                            <a href="{{ url_for('customer.product_review', product_id=product.id, page=p) }}" 
-                               class="w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold border transition-all 
+                {% for review in reviews %}
+                {{ review_card(review) }}
+                {% endfor %}
+
+                {% if pagination.pages > 1 %}
+                <div class="flex justify-center pt-4">
+                    <nav class="flex space-x-2">
+                        {% for p in range(1, pagination.pages + 1) %}
+                        <a href="{{ url_for('customer.product_review', product_id=product.id, page=p) }}"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold border transition-all 
                                {{ 'bg-teal-600 text-white border-teal-600' if p == pagination.page else 'bg-white text-gray-500 border-gray-100 hover:border-teal-200 hover:text-teal-600' }}">
-                                {{ p }}
-                            </a>
-                            {% endfor %}
-                        </nav>
-                    </div>
-                    {% endif %}
+                            {{ p }}
+                        </a>
+                        {% endfor %}
+                    </nav>
+                </div>
+                {% endif %}
                 {% else %}
-                    <div class="bg-gray-50 rounded-2xl p-12 text-center border-2 border-dashed border-gray-200">
-                        <p class="text-gray-400 font-medium">Be the first to review this product!</p>
-                    </div>
+                <div class="bg-gray-50 rounded-2xl p-12 text-center border-2 border-dashed border-gray-200">
+                    <p class="text-gray-400 font-medium">Be the first to review this product!</p>
+                </div>
                 {% endif %}
             </section>
         </div>
@@ -69,26 +73,29 @@
         <aside class="space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
                 <h3 class="text-lg font-bold text-gray-900 mb-6">Aspect Breakdown</h3>
-                
+
                 <div class="space-y-6">
-                    {# This logic would normally be passed from the backend in a real app, 
-                       mocking representative aggregate bars here #}
+                    {# This logic would normally be passed from the backend in a real app,
+                    mocking representative aggregate bars here #}
                     {% set mock_aspects = [
-                        {'name': 'Quality', 'pos': 85, 'neg': 15},
-                        {'name': 'Battery Life', 'pos': 60, 'neg': 40},
-                        {'name': 'Delivery', 'pos': 95, 'neg': 5},
-                        {'name': 'Packaging', 'pos': 40, 'neg': 60}
+                    {'name': 'Quality', 'pos': 85, 'neg': 15},
+                    {'name': 'Battery Life', 'pos': 60, 'neg': 40},
+                    {'name': 'Delivery', 'pos': 95, 'neg': 5},
+                    {'name': 'Packaging', 'pos': 40, 'neg': 60}
                     ] %}
 
                     {% for aspect in mock_aspects %}
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-gray-700 uppercase tracking-tighter">{{ aspect.name }}</span>
+                            <span class="text-xs font-bold text-gray-700 uppercase tracking-tighter">{{ aspect.name
+                                }}</span>
                             <span class="text-[10px] text-gray-400 font-mono">{{ aspect.pos }}% Pos</span>
                         </div>
                         <div class="flex h-2 w-full rounded-full overflow-hidden bg-gray-100">
-                            <div class="h-full bg-teal-500 transition-all duration-700" style="width: {{ aspect.pos }}%"></div>
-                            <div class="h-full bg-red-400 transition-all duration-700" style="width: {{ aspect.neg }}%"></div>
+                            <div class="h-full bg-teal-500 transition-all duration-700"
+                                style="width: {{ aspect.pos }}%"></div>
+                            <div class="h-full bg-red-400 transition-all duration-700" style="width: {{ aspect.neg }}%">
+                            </div>
                         </div>
                         <div class="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-widest">
                             <span class="text-teal-500">Satisfied</span>
