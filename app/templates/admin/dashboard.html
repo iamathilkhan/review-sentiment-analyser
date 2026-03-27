@@ -55,7 +55,7 @@
         <div x-show="currentTab === 'overview'" x-transition>
             {% include 'admin/components/overview_stats.html' %}
         </div>
-        
+
         <div x-show="currentTab === 'complaints'" x-init="fetchComplaints()" x-transition>
             {% include 'admin/components/complaint_manager.html' %}
         </div>
@@ -82,17 +82,17 @@
                 { id: 'users', name: 'Users', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>' },
                 { id: 'reviews', name: 'Reviews', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>' }
             ],
-            
+
             // State for Complaints
             complaints: [],
             complaintLoading: false,
             complaintFilters: { severity: '', status: '' },
-            
+
             // State for Users
             users: [],
             userLoading: false,
             userSearch: '',
-            
+
             // State for Reviews
             reviews: [],
             reviewLoading: false,
@@ -100,12 +100,17 @@
             async fetchComplaints() {
                 this.complaintLoading = true;
                 const params = new URLSearchParams(this.complaintFilters);
+                console.log('Fetching complaints with params:', params.toString());
                 try {
                     const res = await fetch(`/admin/complaints?${params.toString()}`);
                     const data = await res.json();
-                    this.complaints = data.items;
-                } catch (e) { console.error(e); }
-                finally { this.complaintLoading = false; }
+                    console.log('Complaints data received:', data);
+                    this.complaints = data.items || [];
+                } catch (e) {
+                    console.error('Fetch complaints failed:', e);
+                } finally {
+                    this.complaintLoading = false;
+                }
             },
 
             async updateComplaint(id, payload) {
@@ -139,12 +144,27 @@
                 } catch (e) { console.error(e); }
             },
 
+            reviewStats: null,
+
             async fetchReviews() {
                 this.reviewLoading = true;
                 try {
                     const res = await fetch('/admin/reviews');
                     const data = await res.json();
                     this.reviews = data.items;
+
+                    if (data.sentiment_stats) {
+                        const s = data.sentiment_stats;
+                        const total = (s.positive || 0) + (s.negative || 0) + (s.neutral || 0);
+                        this.reviewStats = {
+                            pos: s.positive || 0,
+                            neg: s.negative || 0,
+                            total: total,
+                            pos_p: total > 0 ? (s.positive || 0) / total * 100 : 0,
+                            neu_p: total > 0 ? (s.neutral || 0) / total * 100 : 0,
+                            neg_p: total > 0 ? (s.negative || 0) / total * 100 : 0
+                        };
+                    }
                 } catch (e) { console.error(e); }
                 finally { this.reviewLoading = false; }
             },

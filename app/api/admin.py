@@ -33,20 +33,27 @@ def index():
         reviews_last_7_days.append(count)
     
     # Complaints by severity
-    severity_stats = db.session.query(
+    severity_stats_data = db.session.query(
         Complaint.severity,
         func.count(Complaint.id)
     ).group_by(Complaint.severity).all()
+    complaints_by_severity = {s[0]: s[1] for s in severity_stats_data}
     
-    complaints_by_severity = {s[0]: s[1] for s in severity_stats}
-    
+    # Sentiment stats for pie chart
+    sentiment_data = db.session.query(
+        Review.overall_sentiment,
+        func.count(Review.id)
+    ).filter(Review.status == 'done').group_by(Review.overall_sentiment).all()
+    sentiment_stats = {s[0]: s[1] for s in sentiment_data if s[0]}
+
     return render_template('admin/dashboard.html',
                          total_users=total_users,
                          total_reviews=total_reviews,
                          total_complaints=total_complaints,
                          open_complaints=open_complaints,
                          reviews_last_7_days=reviews_last_7_days,
-                         complaints_by_severity=complaints_by_severity)
+                         complaints_by_severity=complaints_by_severity,
+                         sentiment_stats=sentiment_stats)
 
 @admin_bp.route('/complaints')
 @login_required
@@ -59,7 +66,7 @@ def list_complaints():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 25, type=int)
     
-    query = Complaint.query.join(Review).join(User, Complaint.user_id == User.id).join(Product)
+    query = Complaint.query.outerjoin(Review).outerjoin(User, Complaint.user_id == User.id).outerjoin(Product)
     
     if status:
         query = query.filter(Complaint.status == status)
@@ -76,15 +83,21 @@ def list_complaints():
             "id": str(c.id),
             "severity": c.severity,
             "status": c.status,
-            "created_at": c.created_at.isoformat(),
+            "created_at": c.created_at.isoformat() if c.created_at else None,
             "admin_notes": c.admin_notes,
-            "product": {"name": c.product.name, "id": str(c.product.id)},
-            "user": {"name": c.user.name, "email": c.user.email},
+            "product": {
+                "name": c.product.name if c.product else "Unknown Product", 
+                "id": str(c.product.id) if c.product else None
+            },
+            "user": {
+                "name": c.user.name if c.user else "Deleted User", 
+                "email": c.user.email if c.user else "N/A"
+            },
             "review": {
-                "id": str(c.review.id),
-                "content": c.review.content,
-                "overall_sentiment": c.review.overall_sentiment,
-                "aspects": [{"category": a.aspect_category, "polarity": a.polarity} for a in c.review.aspect_sentiments]
+                "id": str(c.review.id) if c.review else None,
+                "content": c.review.content if c.review else "Review Content Hidden/Deleted",
+                "overall_sentiment": c.review.overall_sentiment if c.review else "N/A",
+                "aspects": [{"category": a.aspect_category, "polarity": a.polarity} for a in c.review.aspect_sentiments] if c.review else []
             }
         })
         
@@ -206,9 +219,17 @@ def list_reviews():
             "product": {"name": r.product.name}
         })
         
+    # Aggregate sentiment stats for the mini pie chart in the review tab
+    sentiment_data = db.session.query(
+        Review.overall_sentiment,
+        func.count(Review.id)
+    ).filter(Review.is_active == True, Review.status == 'done').group_by(Review.overall_sentiment).all()
+    sentiment_stats = {s[0]: s[1] for s in sentiment_data if s[0]}
+
     return jsonify({
         "items": items,
-        "total": pagination.total
+        "total": pagination.total,
+        "sentiment_stats": sentiment_stats
     })
 
 @admin_bp.route('/reviews/<uuid:review_id>', methods=['DELETE'])

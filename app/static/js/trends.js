@@ -4,7 +4,7 @@ const PALETTE = ['#14b8a6', '#f43f5e', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899
 
 function initChart() {
     const ctx = document.getElementById('trendChart').getContext('2d');
-    
+
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: { labels: [], datasets: [] },
@@ -14,8 +14,8 @@ function initChart() {
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { position: 'bottom', align: 'start', labels: { usePointStyle: true, boxWidth: 6, font: { weight: '600', size: 10 } } },
-                tooltip: { 
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
                     titleFont: { size: 13, weight: 'bold' },
                     bodyFont: { size: 12 },
                     padding: 12,
@@ -35,12 +35,12 @@ function initChart() {
 
 function updateChart(data, selectedAspects) {
     if (!trendChartInstance) initChart();
-    
+
     const periods = [...new Set(data.map(d => d.period))].sort();
-    
+
     const datasets = selectedAspects.map((aspect, idx) => {
         const color = PALETTE[idx % PALETTE.length];
-        
+
         // Fill mapping: ensure we have values for all periods (null for gaps)
         const periodValues = periods.map(p => {
             const entry = data.find(d => d.period === p && d.aspect_category === aspect);
@@ -80,23 +80,23 @@ async function fetchHeatmap(productId) {
 function drawHeatmap(data) {
     const svg = document.getElementById('heatmapSvg');
     if (!svg || data.aspects.length === 0) return;
-    
+
     // Clear svg
     svg.innerHTML = '';
-    
+
     // Config
     const rowHeight = 40;
     const colWidth = 60;
     const labelWidth = 120;
     const topMargin = 30;
-    
+
     svg.setAttribute('height', (data.aspects.length * rowHeight) + topMargin + 40);
     svg.setAttribute('width', (data.periods.length * colWidth) + labelWidth + 40);
 
     // X Labels
     data.periods.forEach((p, i) => {
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute('x', labelWidth + (i * colWidth) + (colWidth/2));
+        text.setAttribute('x', labelWidth + (i * colWidth) + (colWidth / 2));
         text.setAttribute('y', 20);
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('class', 'text-[10px] font-bold fill-gray-400');
@@ -110,7 +110,7 @@ function drawHeatmap(data) {
         // Label
         const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
         label.setAttribute('x', 10);
-        label.setAttribute('y', topMargin + (r * rowHeight) + (rowHeight/2) + 5);
+        label.setAttribute('y', topMargin + (r * rowHeight) + (rowHeight / 2) + 5);
         label.setAttribute('class', 'text-xs font-bold fill-gray-600');
         label.textContent = aspect;
         svg.appendChild(label);
@@ -125,19 +125,19 @@ function drawHeatmap(data) {
             rect.setAttribute('height', rowHeight - 4);
             rect.setAttribute('rx', 6);
             rect.setAttribute('class', 'heatmap-cell transition-all duration-300');
-            
+
             // Color interpolation (0 = gray-100, 100 = teal-600)
-            const color = (ratio > 70) ? `rgb(13, 148, 136)` : 
-                          (ratio > 50) ? `rgb(45, 212, 191)` :
-                          (ratio > 30) ? `rgb(153, 246, 228)` : `rgb(241, 245, 249)`;
-            
+            const color = (ratio > 70) ? `rgb(13, 148, 136)` :
+                (ratio > 50) ? `rgb(45, 212, 191)` :
+                    (ratio > 30) ? `rgb(153, 246, 228)` : `rgb(241, 245, 249)`;
+
             rect.setAttribute('fill', color);
             rect.setAttribute('opacity', count < 5 ? 0.3 : 1);
-            
+
             // Tooltip events
             rect.onmouseover = (ev) => showHeatmapTooltip(ev, aspect, ratio, count);
             rect.onmouseout = () => { window.__trendAppTooltip = false; };
-            
+
             svg.appendChild(rect);
         });
     });
@@ -158,6 +158,53 @@ function showHeatmapTooltip(ev, category, ratio, count) {
     };
 }
 
-// Global hook for Alpine
+let complaintChartInstance = null;
+
+function initComplaintChart() {
+    const canvas = document.getElementById('complaintChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    complaintChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: [], datasets: [] },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+function updateComplaintChart(data) {
+    if (!complaintChartInstance) initComplaintChart();
+    if (!complaintChartInstance) return;
+
+    const periods = [...new Set(data.map(d => d.period))].sort();
+
+    const counts = periods.map(p => {
+        return data.filter(d => d.period === p).reduce((sum, d) => sum + d.count, 0);
+    });
+
+    complaintChartInstance.data.labels = periods;
+    complaintChartInstance.data.datasets = [{
+        label: 'Daily Complaints',
+        data: counts,
+        backgroundColor: '#f59e0b90',
+        borderColor: '#f59e0b',
+        borderWidth: 2,
+        borderRadius: 8
+    }];
+    complaintChartInstance.update();
+}
+
+// Global hooks for Alpine
 window.updateChart = updateChart;
 window.fetchHeatmap = fetchHeatmap;
+window.updateComplaintChart = updateComplaintChart;

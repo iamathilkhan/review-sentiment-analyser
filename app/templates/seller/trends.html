@@ -10,6 +10,7 @@
     .velocity-badge {
         @apply flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105;
     }
+
     .heatmap-cell:hover {
         @apply stroke-2 stroke-teal-400;
         cursor: pointer;
@@ -26,11 +27,12 @@
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Aspect Intelligence</h1>
                 <p class="text-gray-500 mt-1">Analyzing sentiment velocity and historical shifts</p>
             </div>
-            
+
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Product Selector for Admin -->
                 {% if current_user.role == 'admin' %}
-                <select x-model="filters.productId" @change="debouncedFetch()" class="bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500">
+                <select x-model="filters.productId" @change="debouncedFetch()"
+                    class="bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500">
                     <option value="">Select Product...</option>
                     <template x-for="p in products" :key="p.id">
                         <option :value="p.id" x-text="p.name"></option>
@@ -49,8 +51,11 @@
                 </div>
 
                 <!-- Granularity Toggle -->
-                <button @click="toggleGranularity()" class="p-2 bg-gray-50 text-gray-400 hover:text-teal-600 rounded-xl transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                <button @click="toggleGranularity()"
+                    class="p-2 bg-gray-50 text-gray-400 hover:text-teal-600 rounded-xl transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 12h16M4 18h7"></path>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -58,8 +63,7 @@
         <!-- Velocity Badges -->
         <div class="flex flex-wrap gap-3 mb-4">
             <template x-for="(v, cat) in sortedVelocity" :key="cat">
-                <div class="velocity-badge" 
-                    :class="{
+                <div class="velocity-badge" :class="{
                         'bg-teal-50 text-teal-700 border border-teal-100': v.direction === 'improving',
                         'bg-red-50 text-red-700 border border-red-100': v.direction === 'declining',
                         'bg-gray-50 text-gray-600 border border-gray-100': v.direction === 'stable'
@@ -74,65 +78,90 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Trend Chart -->
-        <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-900">Sentiment Trajectory</h2>
-                <div x-show="loading" class="animate-spin text-teal-600">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </div>
+    <!-- Global Admin Analytics (Only shown for Admin) -->
+    {% if current_user.role == 'admin' %}
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mt-8" x-show="!filters.productId">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Platform Health: Complaints vs Volume</h2>
+                <p class="text-sm text-gray-500">Correlation between reviews and escalation trends</p>
             </div>
-            
-            <div class="relative h-[400px]">
-                <canvas id="trendChart"></canvas>
-                <div x-show="data.length < 3 && !loading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
-                    <p class="text-gray-400 font-medium">Not enough historical data for this window.</p>
+            <div class="flex gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                    <span class="text-xs font-bold text-gray-500 uppercase">Complaints</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-teal-400"></span>
+                    <span class="text-xs font-bold text-gray-500 uppercase">Reviews</span>
                 </div>
             </div>
         </div>
 
-        <!-- Aspect Distribution Control -->
-        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Analyze Aspects</h2>
-            <div class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                <template x-for="cat in availableAspects" :key="cat">
-                    <label class="flex items-center p-3 rounded-xl border border-transparent hover:bg-gray-50 transition cursor-pointer">
-                        <input type="checkbox" :value="cat" x-model="filters.aspects" @change="updateChartDatasets()"
-                            class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-3">
-                        <span class="text-sm font-semibold text-gray-700" x-text="cat"></span>
-                    </label>
-                </template>
-            </div>
+        <div class="h-64 relative">
+            <canvas id="complaintChart"></canvas>
         </div>
     </div>
+    {% endif %}
 
-    <!-- Heatmap Section -->
-    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="flex justify-between items-center mb-10">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900">Intensity Matrix</h2>
-                <p class="text-sm text-gray-500">Positive ratio per aspect over last 12 weeks</p>
+    <div x-show="filters.productId">
+        <!-- Main Trend Chart -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Sentiment Trajectory</h2>
+                    <div x-show="loading" class="animate-spin text-teal-600">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="relative h-[400px]">
+                    <canvas id="trendChart"></canvas>
+                    <div x-show="data.length < 3 && !loading"
+                        class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                        <p class="text-gray-400 font-medium">Not enough historical data for this window.</p>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold text-gray-400">Negative</span>
-                <div class="w-32 h-2 rounded-full bg-gradient-to-r from-red-200 via-gray-100 to-teal-500"></div>
-                <span class="text-[10px] font-bold text-gray-400">Positive</span>
+
+            <!-- Aspect Distribution Control -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Analyze Aspects</h2>
+                <div class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <template x-for="cat in availableAspects" :key="cat">
+                        <label
+                            class="flex items-center p-3 rounded-xl border border-transparent hover:bg-gray-50 transition cursor-pointer">
+                            <input type="checkbox" :value="cat" x-model="filters.aspects"
+                                @change="updateChartDatasets()"
+                                class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-3">
+                            <span class="text-sm font-semibold text-gray-700" x-text="cat"></span>
+                        </label>
+                    </template>
+                </div>
             </div>
         </div>
 
-        <div class="overflow-x-auto pb-4">
-            <svg id="heatmapSvg" class="min-w-[800px]" height="300">
-                <!-- Heatmap rendered via trends.js D3-like logic or static SVG nodes -->
-            </svg>
-        </div>
-        
-        <!-- Tooltip for Heatmap -->
-        <div x-show="tooltip.show" 
-             class="fixed bg-white px-3 py-2 rounded-lg shadow-xl border border-gray-100 text-xs z-50 pointer-events-none"
-             :style="'left: ' + tooltip.x + 'px; top: ' + (tooltip.y - 40) + 'px'">
-            <p class="font-bold text-gray-900" x-text="tooltip.category"></p>
-            <p class="text-teal-600 font-bold"><span x-text="tooltip.ratio"></span>% Positive (<span x-text="tooltip.count"></span> revs)</p>
+        <!-- Heatmap Section -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 overflow-hidden mt-8">
+            <div class="flex justify-between items-center mb-10">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Intensity Matrix</h2>
+                    <p class="text-sm text-gray-500">Positive ratio per aspect over last 12 weeks</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-gray-400">Negative</span>
+                    <div class="w-32 h-2 rounded-full bg-gradient-to-r from-red-200 via-gray-100 to-teal-500"></div>
+                    <span class="text-[10px] font-bold text-gray-400">Positive</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto pb-4">
+                <svg id="heatmapSvg" class="min-w-[800px]" height="300"></svg>
+            </div>
         </div>
     </div>
 </div>
@@ -148,7 +177,7 @@
             data: [],
             velocity: {},
             availableAspects: [],
-            products: initialProducts, 
+            products: initialProducts,
             filters: {
                 productId: '{{ product_id or "" }}',
                 window: '30d',
@@ -156,7 +185,7 @@
                 aspects: []
             },
             tooltip: { show: false, x: 0, y: 0, category: '', ratio: 0, count: 0 },
-            
+
             get sortedVelocity() {
                 // Sort by direction (declining first) then delta
                 return Object.entries(this.velocity)
@@ -190,35 +219,46 @@
             },
 
             async fetchData() {
-                if (!this.filters.productId) return;
-                this.loading = true;
-                
-                try {
-                    const q = new URLSearchParams({
-                        window: this.filters.window,
-                        granularity: this.filters.granularity
-                    }).toString();
-                    
-                    const res = await fetch(`/analytics/product/${this.filters.productId}/trends?${q}`);
-                    const json = await res.json();
-                    
-                    this.data = json.data;
-                    this.velocity = json.velocity;
-                    
-                    // Update available aspects
-                    const cats = [...new Set(this.data.map(d => d.aspect_category))];
-                    this.availableAspects = cats;
-                    if (this.filters.aspects.length === 0) {
-                        this.filters.aspects = cats.slice(0, 3);
+                if (this.filters.productId) {
+                    this.loading = true;
+                    try {
+                        const q = new URLSearchParams({
+                            window: this.filters.window,
+                            granularity: this.filters.granularity
+                        }).toString();
+
+                        const res = await fetch(`/analytics/product/${this.filters.productId}/trends?${q}`);
+                        const json = await res.json();
+
+                        this.data = json.data;
+                        this.velocity = json.velocity;
+
+                        const cats = [...new Set(this.data.map(d => d.aspect_category))];
+                        this.availableAspects = cats;
+                        if (this.filters.aspects.length === 0) {
+                            this.filters.aspects = cats.slice(0, 3);
+                        }
+
+                        updateChart(this.data, this.filters.aspects);
+                        fetchHeatmap(this.filters.productId);
+                    } catch (e) {
+                        console.error("Trend fetch failed", e);
+                    } finally {
+                        this.loading = false;
                     }
-                    
-                    updateChart(this.data, this.filters.aspects);
-                    fetchHeatmap(this.filters.productId);
-                } catch (e) {
-                    console.error("Trend fetch failed", e);
-                } finally {
-                    this.loading = false;
+                } else {
+                    // Global Platform Analytics
+                    this.fetchComplaintStats();
                 }
+            },
+
+            async fetchComplaintStats() {
+                try {
+                    const q = new URLSearchParams({ window: this.filters.window }).toString();
+                    const res = await fetch(`/analytics/complaints/stats?${q}`);
+                    const json = await res.json();
+                    updateComplaintChart(json.data);
+                } catch (e) { console.error("Complaint stats fetch failed", e); }
             },
 
             updateChartDatasets() {

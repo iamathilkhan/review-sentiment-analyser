@@ -73,6 +73,48 @@
     <div id="review-result" class="mt-6 p-8 rounded-2xl bg-gradient-to-br from-gray-50 to-white shadow-lg border border-gray-100
                 border-t-4 border-t-teal-500 hidden transition-all">
     </div>
+
+    {# ── Complaint Preview Modal ── #}
+    <div id="complaint-preview-modal-{{ product_id }}"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-up">
+            <div class="bg-red-50 p-6 border-b border-red-100 flex items-center gap-4">
+                <div class="p-3 bg-red-100 rounded-2xl text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Negative Review Detected</h3>
+                    <p class="text-xs text-red-600 font-bold uppercase tracking-widest mt-0.5">Automated Support
+                        Initiation</p>
+                </div>
+            </div>
+            <div class="p-8">
+                <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                    We noticed your experience wasn't ideal. To help our team resolve this faster, we've
+                    auto-generated a formal complaint based on your feedback.
+                    <strong>Please review the content below:</strong>
+                </p>
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-8 italic text-gray-700 text-sm leading-relaxed"
+                    id="complaint-text-preview-{{ product_id }}">
+                    <!-- Text injected by review_submit.js -->
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="confirm-with-complaint-{{ product_id }}"
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                        Submit Review & Complaint
+                    </button>
+                    <button id="cancel-preview-{{ product_id }}"
+                        class="px-6 py-3 text-gray-400 font-bold hover:text-gray-600 transition-all">
+                        Edit Review
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {# Load emotion detection BEFORE review_submit so the Set is ready #}

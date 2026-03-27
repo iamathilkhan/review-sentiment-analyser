@@ -69,40 +69,64 @@
             </section>
         </div>
 
-        <!-- Sidebar: Aggregate Aspects -->
+        <!-- Sidebar: Aggregate Analytics -->
         <aside class="space-y-6">
+            <!-- Sentiment Pie Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wider">Sentiment Distribution</h3>
+
+                {% set total = sentiment_stats.values()|sum if sentiment_stats else 0 %}
+                {% set pos_p = (sentiment_stats.get('positive', 0) / total * 100) if total > 0 else 0 %}
+                {% set neu_p = (sentiment_stats.get('neutral', 0) / total * 100) if total > 0 else 0 %}
+                {% set neg_p = (sentiment_stats.get('negative', 0) / total * 100) if total > 0 else 0 %}
+
+                <div class="relative w-32 h-32 rounded-full mx-auto mb-6"
+                    style="background: conic-gradient(#14b8a6 0% {{ pos_p }}%, #94a3b8 {{ pos_p }}% {{ pos_p + neu_p }}%, #ef4444 {{ pos_p + neu_p }}% 100%);">
+                    <div class="absolute inset-6 bg-white rounded-full flex flex-col items-center justify-center">
+                        <p class="text-lg font-black text-gray-900">{{ total }}</p>
+                        <p class="text-[8px] uppercase font-bold text-gray-400">Reviews</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                    <div class="flex items-center">
+                        <div class="w-1.5 h-1.5 rounded-full bg-teal-500 mr-1"></div> Pos
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1"></div> Neu
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-1.5 h-1.5 rounded-full bg-red-400 mr-1"></div> Neg
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aspect Breakdown -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
-                <h3 class="text-lg font-bold text-gray-900 mb-6">Aspect Breakdown</h3>
+                <h3 class="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wider">Aspect Breakdown</h3>
 
                 <div class="space-y-6">
-                    {# This logic would normally be passed from the backend in a real app,
-                    mocking representative aggregate bars here #}
-                    {% set mock_aspects = [
-                    {'name': 'Quality', 'pos': 85, 'neg': 15},
-                    {'name': 'Battery Life', 'pos': 60, 'neg': 40},
-                    {'name': 'Delivery', 'pos': 95, 'neg': 5},
-                    {'name': 'Packaging', 'pos': 40, 'neg': 60}
-                    ] %}
-
-                    {% for aspect in mock_aspects %}
+                    {% if aspect_stats %}
+                    {% for cat, stats in aspect_stats.items() %}
+                    {% set total_a = stats.positive + stats.negative + stats.neutral %}
+                    {% set pos_a = (stats.positive / total_a * 100) if total_a > 0 else 0 %}
+                    {% set neg_a = (stats.negative / total_a * 100) if total_a > 0 else 0 %}
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-gray-700 uppercase tracking-tighter">{{ aspect.name
-                                }}</span>
-                            <span class="text-[10px] text-gray-400 font-mono">{{ aspect.pos }}% Pos</span>
+                            <span class="text-xs font-bold text-gray-700 uppercase tracking-tighter">{{ cat }}</span>
+                            <span class="text-[10px] text-gray-400 font-mono">{{ pos_a|round }}% Pos</span>
                         </div>
                         <div class="flex h-2 w-full rounded-full overflow-hidden bg-gray-100">
-                            <div class="h-full bg-teal-500 transition-all duration-700"
-                                style="width: {{ aspect.pos }}%"></div>
-                            <div class="h-full bg-red-400 transition-all duration-700" style="width: {{ aspect.neg }}%">
+                            <div class="h-full bg-teal-500 transition-all duration-700" style="width: {{ pos_a }}%">
                             </div>
-                        </div>
-                        <div class="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-widest">
-                            <span class="text-teal-500">Satisfied</span>
-                            <span class="text-red-400">Needs Work</span>
+                            <div class="h-full bg-red-400 transition-all duration-700" style="width: {{ neg_a }}%">
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
+                    {% else %}
+                    <p class="text-xs text-gray-400 text-center py-4">Processing aspect data...</p>
+                    {% endif %}
                 </div>
 
                 <div class="mt-8 pt-8 border-t border-gray-50">

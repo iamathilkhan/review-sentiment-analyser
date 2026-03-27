@@ -162,6 +162,40 @@ def heatmap_data(product_id):
         "cells": cells
     })
 
+@analytics_bp.route('/complaints/stats')
+@login_required
+@role_required("admin")
+def complaint_stats():
+    """Aggregate complaint statistics over time."""
+    window = request.args.get('window', '30d')
+    interval_map = {'7d': '-7 days', '30d': '-30 days', '90d': '-90 days', '1y': '-1 year'}
+    sqlite_interval = interval_map.get(window, '-30 days')
+
+    sql = text("""
+        SELECT 
+            strftime('%Y-%m-%d', created_at) as period,
+            severity,
+            status,
+            COUNT(*) as count
+        FROM complaints
+        WHERE created_at >= datetime('now', :window_interval)
+        GROUP BY period, severity, status
+        ORDER BY period ASC
+    """)
+    
+    results = db.session.execute(sql, {"window_interval": sqlite_interval}).fetchall()
+    
+    data = []
+    for row in results:
+        data.append({
+            "period": row[0],
+            "severity": row[1],
+            "status": row[2],
+            "count": int(row[3])
+        })
+        
+    return jsonify({"data": data})
+
 @analytics_bp.route('/overview')
 @login_required
 def overview():

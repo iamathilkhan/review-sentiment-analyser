@@ -107,6 +107,38 @@ def submit_review():
 
         db.session.commit()
 
+        # Automatic Complaint Trigger
+        if review.overall_sentiment == "negative":
+            try:
+                from ..models.complaint import Complaint
+                from ..ml.complaint_generator import generate_complaint_text
+                
+                # Check for existing complaint
+                if not Complaint.query.filter_by(review_id=review.id).first():
+                    # Fallback if AI generation is too slow or fails
+                    try:
+                        complaint_desc = generate_complaint_text(content)
+                    except Exception as gen_err:
+                        print(f"AI Generation failed: {gen_err}")
+                        complaint_desc = f"Negative feedback reported: {content[:100]}..."
+
+                    auto_complaint = Complaint(
+                        review_id=review.id,
+                        user_id=g.current_user.id,
+                        product_id=pid,
+                        severity="high",
+                        status="open",
+                        admin_notes=f"SYSTEM_AUTO_FLAG: {complaint_desc}"
+                    )
+                    db.session.add(auto_complaint)
+                    db.session.commit()
+                    print(f"SUCCESS: AUTOMATIC COMPLAINT CREATED for review {review.id}")
+            except Exception as outer_err:
+                db.session.rollback()
+                print(f"CRITICAL: Auto-complaint creation failed: {outer_err}")
+                # We don't abort the review submission if auto-complaint fails, 
+                # but we log it heavily.
+
         return jsonify({
             "review_id": str(review.id),
             "status": review.status,
@@ -195,3 +227,48 @@ def get_product_reviews(product_id):
         "page": pagination.page,
         "pages": pagination.pages
     })
+
+@reviews_bp.route('/preview-complaint', methods=['POST'])
+@login_required
+@role_required("customer")
+def preview_complaint():
+    """
+    Generate a preview of the complaint text based on the review content.
+    Used for showing the user what will be submitted if their review is negative.
+    """
+    data = request.get_json()
+    content = data.get('content')
+    confirmed_emotions = data.get('confirmed_emotions', [])
+    
+    if not content or len(content) < 20:
+        return jsonify({"should_escalate": False})
+
+    try:
+        from ..ml.model_loader import get_pipeline
+        from ..ml.complaint_generator import generate_complaint_text
+        
+        # 1. Quick sentiment check
+        pipeline = get_pipeline()
+        result = pipeline.process_review(content)
+        
+        # Overlay confirmed emotions onto sentiment check
+        sentiment = result.overall_sentiment
+        neg_emotions = {'Angry', 'Disappointed', 'Disgusted', 'Fearful'}
+        if confirmed_emotions and any(e in neg_emotions for e in confirmed_emotions):
+            sentiment = "negative"
+
+        if sentiment == "negative":
+            complaint_text = generate_complaint_text(content)
+            return jsonify({
+                "should_escalate": True,
+                "sentiment": "negative",
+                "preview_text": complaint_text
+            })
+            
+        return jsonify({
+            "should_escalate": False, 
+            "sentiment": sentiment
+        })
+    except Exception as e:
+        print(f"Preview complaint error: {e}")
+        return jsonify({"should_escalate": False, "error": str(e)})

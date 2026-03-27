@@ -1,7 +1,12 @@
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center" x-data="countUp({{ total_users }})">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center"
+        x-data="countUp({{ total_users }})">
         <div class="p-4 bg-blue-50 text-blue-600 rounded-xl mr-4">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                </path>
+            </svg>
         </div>
         <div>
             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Total Users</p>
@@ -9,9 +14,14 @@
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center" x-data="countUp({{ total_reviews }})">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center"
+        x-data="countUp({{ total_reviews }})">
         <div class="p-4 bg-teal-50 text-teal-600 rounded-xl mr-4">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                </path>
+            </svg>
         </div>
         <div>
             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Total Reviews</p>
@@ -19,22 +29,17 @@
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center" x-data="countUp({{ open_complaints }})">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center"
+        x-data="countUp({{ open_complaints }})">
         <div class="p-4 bg-amber-50 text-amber-600 rounded-xl mr-4">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                </path>
+            </svg>
         </div>
         <div>
             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Open Complaints</p>
-            <p class="text-3xl font-bold text-gray-900" x-text="current"></p>
-        </div>
-    </div>
-
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center" x-data="countUp({{ complaints_by_severity.get('critical', 0) }})">
-        <div class="p-4 bg-red-50 text-red-600 rounded-xl mr-4">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 003 11c0-2.789.533-5.341 1.501-7.675M19 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0115 11c0-2.789.533-5.341 1.501-7.675M9 13h6m-3-3v6m-9-3h18"></path></svg>
-        </div>
-        <div>
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Critical Issues</p>
             <p class="text-3xl font-bold text-gray-900" x-text="current"></p>
         </div>
     </div>
@@ -72,8 +77,8 @@
                {% for val in reviews_last_7_days %}
                {{ loop.index0 * (100 / (reviews_last_7_days|length - 1)) if (reviews_last_7_days|length > 1) else 0 }} {{ 40 - (val / max_val * 35) }}
                {{ 'L' if not loop.last else '' }}
-               {% endfor %}" 
-               fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+               {% endfor %}" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
         </svg>
     </div>
     <div class="flex justify-between mt-2 px-1">
@@ -83,21 +88,38 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Severity Distribution</h3>
-        <div class="space-y-4">
-            {% for sev in ['critical', 'high', 'medium', 'low'] %}
-            {% set count = complaints_by_severity.get(sev, 0) %}
-            {% set pct = (count / total_complaints * 100) if total_complaints > 0 else 0 %}
-            <div class="flex items-center">
-                <span class="w-20 text-xs font-semibold text-gray-500 uppercase">{{ sev }}</span>
-                <div class="flex-1 bg-gray-100 h-2 rounded-full mx-4 overflow-hidden">
-                    <div class="h-full rounded-full {% if sev == 'critical' %}bg-red-500{% elif sev == 'high' %}bg-orange-500{% elif sev == 'medium' %}bg-amber-500{% else %}bg-gray-400{% endif %}"
-                        style="width: {{ pct }}%"></div>
-                </div>
-                <span class="w-8 text-right text-sm font-bold text-gray-700">{{ count }}</span>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+        <h3 class="text-lg font-bold text-gray-900 mb-6 w-full text-left">Global Sentiment Distribution</h3>
+
+        {% set total = sentiment_stats.values()|sum if sentiment_stats else 0 %}
+        {% set pos_p = (sentiment_stats.get('positive', 0) / total * 100) if total > 0 else 0 %}
+        {% set neu_p = (sentiment_stats.get('neutral', 0) / total * 100) if total > 0 else 0 %}
+        {% set neg_p = (sentiment_stats.get('negative', 0) / total * 100) if total > 0 else 0 %}
+
+        <div class="relative w-48 h-48 rounded-full mb-6"
+            style="background: conic-gradient(#14b8a6 0% {{ pos_p }}%, #94a3b8 {{ pos_p }}% {{ pos_p + neu_p }}%, #ef4444 {{ pos_p + neu_p }}% 100%); transition: all 1s ease-in-out;">
+            <div class="absolute inset-8 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
+                <p class="text-2xl font-black text-gray-900">{{ total }}</p>
+                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Reviews</p>
             </div>
-            {% endfor %}
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 w-full mt-2">
+            <div class="text-center">
+                <div class="w-2 h-2 rounded-full bg-teal-500 mx-auto mb-1"></div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Positive</p>
+                <p class="text-sm font-black text-gray-900">{{ sentiment_stats.get('positive', 0) }}</p>
+            </div>
+            <div class="text-center">
+                <div class="w-2 h-2 rounded-full bg-gray-400 mx-auto mb-1"></div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Neutral</p>
+                <p class="text-sm font-black text-gray-900">{{ sentiment_stats.get('neutral', 0) }}</p>
+            </div>
+            <div class="text-center">
+                <div class="w-2 h-2 rounded-full bg-red-500 mx-auto mb-1"></div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Negative</p>
+                <p class="text-sm font-black text-gray-900">{{ sentiment_stats.get('negative', 0) }}</p>
+            </div>
         </div>
     </div>
 
@@ -119,7 +141,7 @@
                 <span class="text-2xl mb-1">🏢</span>
                 <span class="text-xs font-bold uppercase tracking-tight">Sellers</span>
             </button>
-            <a href="/admin/complaints/export.csv" 
+            <a href="/admin/complaints/export.csv"
                 class="p-4 bg-gray-50 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition group flex flex-col items-center">
                 <span class="text-2xl mb-1">📊</span>
                 <span class="text-xs font-bold uppercase tracking-tight">Export Data</span>

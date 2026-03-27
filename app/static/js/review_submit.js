@@ -33,51 +33,111 @@ document.addEventListener('DOMContentLoaded', () => {
         // Form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const content = textarea.value;
-            submitBtn.disabled = true;
 
-            // Show loading overlay
+            // 1. Show processing state
+            submitBtn.disabled = true;
             loadingOverlay.classList.remove('hidden');
+            document.getElementById('processing-status-text').textContent = "Pre-screening for support needs...";
 
             try {
+                // 2. Check if we should suggest a complaint
                 const confirmedEmotionsInput = document.getElementById(`confirmed_emotions-${productId}`);
                 const confirmedEmotions = confirmedEmotionsInput
                     ? JSON.parse(confirmedEmotionsInput.value || '[]')
                     : [];
 
-                const response = await fetch('/reviews/', {
+                const previewRes = await fetch('/reviews/preview-complaint', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': form.querySelector('[name=csrf_token]').value
                     },
                     body: JSON.stringify({
-                        product_id: productId,
                         content: content,
                         confirmed_emotions: confirmedEmotions
                     })
                 });
 
+                const previewData = await previewRes.json();
                 loadingOverlay.classList.add('hidden');
 
-                if (response.status === 201 || response.status === 202) {
-                    const data = await response.json();
-                    showSuccessCard(data, confirmedEmotions);
-                    showToast('✅ Review submitted and analysed!', 'success');
-                } else if (response.status === 429) {
-                    showToast("You've submitted too many reviews. Try again later.", 'warning');
-                    submitBtn.disabled = false;
+                if (previewData.should_escalate) {
+                    // Show Complaint Modal
+                    const modal = document.getElementById(`complaint-preview-modal-${productId}`);
+                    const previewText = document.getElementById(`complaint-text-preview-${productId}`);
+                    const confirmBtn = document.getElementById(`confirm-with-complaint-${productId}`);
+                    const cancelBtn = document.getElementById(`cancel-preview-${productId}`);
+
+                    previewText.innerHTML = `&ldquo;${previewData.preview_text}&rdquo;`;
+                    modal.classList.remove('hidden');
+
+                    // Handle Modal Buttons
+                    return new Promise((resolve) => {
+                        const onConfirm = () => {
+                            modal.classList.add('hidden');
+                            performActualSubmit();
+                            resolve();
+                        };
+                        const onCancel = () => {
+                            modal.classList.add('hidden');
+                            submitBtn.disabled = false;
+                            resolve();
+                        };
+                        confirmBtn.onclick = onConfirm;
+                        cancelBtn.onclick = onCancel;
+                    });
                 } else {
-                    const error = await response.json().catch(() => ({}));
-                    showToast(error.error || 'Failed to submit review', 'error');
-                    submitBtn.disabled = false;
+                    performActualSubmit();
                 }
             } catch (err) {
-                console.error('Submission error:', err);
-                loadingOverlay.classList.add('hidden');
-                showToast('Network error. Please check your connection.', 'error');
-                submitBtn.disabled = false;
+                console.error('Pre-screen error:', err);
+                performActualSubmit(); // Fallback to normal submit
+            }
+
+            async function performActualSubmit() {
+                loadingOverlay.classList.remove('hidden');
+                document.getElementById('processing-status-text').textContent = "Analysing your review...";
+
+                try {
+                    const confirmedEmotionsInput = document.getElementById(`confirmed_emotions-${productId}`);
+                    const confirmedEmotions = confirmedEmotionsInput
+                        ? JSON.parse(confirmedEmotionsInput.value || '[]')
+                        : [];
+
+                    const response = await fetch('/reviews/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': form.querySelector('[name=csrf_token]').value
+                        },
+                        body: JSON.stringify({
+                            product_id: productId,
+                            content: content,
+                            confirmed_emotions: confirmedEmotions
+                        })
+                    });
+
+                    loadingOverlay.classList.add('hidden');
+
+                    if (response.status === 201 || response.status === 202) {
+                        const data = await response.json();
+                        showSuccessCard(data, confirmedEmotions);
+                        showToast('✅ Review & Complaint submitted!', 'success');
+                    } else if (response.status === 429) {
+                        showToast("You've submitted too many reviews. Try again later.", 'warning');
+                        submitBtn.disabled = false;
+                    } else {
+                        const error = await response.json().catch(() => ({}));
+                        showToast(error.error || 'Failed to submit review', 'error');
+                        submitBtn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Submission error:', err);
+                    loadingOverlay.classList.add('hidden');
+                    showToast('Network error. Please check your connection.', 'error');
+                    submitBtn.disabled = false;
+                }
             }
         });
 
