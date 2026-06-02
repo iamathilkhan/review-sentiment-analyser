@@ -87,3 +87,4 @@ Makefile         ← Task runner
 - `make lint`: Run code style checks (flake8, black)
 - `make worker`: Start Celery worker
 - `make flower`: Start Celery monitoring dashboard
+"change 2" 
