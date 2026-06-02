@@ -69,21 +69,25 @@ def dashboard():
 
     return render_template('seller/dashboard.html', data=dashboard_data)
 
-@seller_bp.route('/product/<uuid:product_id>/aspects')
+@seller_bp.route('/product/<product_id>/aspects')
 @login_required
 @role_required('seller')
 def product_aspects(product_id):
-    """Deep aspect analysis for a specific product."""
-    product = Product.query.get_or_404(product_id)
-    if product.seller_id != current_user.id:
-        abort(403)
+    """Deep aspect analysis for a specific product or all products."""
+    if product_id == 'all':
+        query_filter = Review.product.has(Product.seller_id == current_user.id)
+    else:
+        product = Product.query.get_or_404(product_id)
+        if product.seller_id != current_user.id:
+            abort(403)
+        query_filter = Review.product_id == product_id
         
     aspect_metrics = db.session.query(
         AspectSentiment.aspect_category,
         AspectSentiment.polarity,
         func.count(AspectSentiment.id).label('count'),
         func.avg(AspectSentiment.confidence).label('avg_conf')
-    ).join(Review).filter(Review.product_id == product_id).group_by(
+    ).join(Review).filter(query_filter).group_by(
         AspectSentiment.aspect_category, AspectSentiment.polarity
     ).all()
     
@@ -123,7 +127,7 @@ def product_aspects(product_id):
             AspectSentiment.aspect_term, 
             func.count(AspectSentiment.id)
         ).join(Review).filter(
-            Review.product_id == product_id,
+            query_filter,
             AspectSentiment.aspect_category == cat
         ).group_by(
             AspectSentiment.aspect_term
@@ -131,27 +135,27 @@ def product_aspects(product_id):
         
         # Recent trend (last 7 days pos ratio vs prior)
         recent_pos = db.session.query(func.count(AspectSentiment.id)).join(Review).filter(
-            Review.product_id == product_id,
+            query_filter,
             AspectSentiment.aspect_category == cat,
             AspectSentiment.polarity == 'positive',
             Review.created_at >= last_7
         ).scalar() or 0
         
         recent_total = db.session.query(func.count(AspectSentiment.id)).join(Review).filter(
-            Review.product_id == product_id,
+            query_filter,
             AspectSentiment.aspect_category == cat,
             Review.created_at >= last_7
         ).scalar() or 0
         
         prior_pos = db.session.query(func.count(AspectSentiment.id)).join(Review).filter(
-            Review.product_id == product_id,
+            query_filter,
             AspectSentiment.aspect_category == cat,
             AspectSentiment.polarity == 'positive',
             Review.created_at.between(prior_7, last_7)
         ).scalar() or 0
         
         prior_total = db.session.query(func.count(AspectSentiment.id)).join(Review).filter(
-            Review.product_id == product_id,
+            query_filter,
             AspectSentiment.aspect_category == cat,
             Review.created_at.between(prior_7, last_7)
         ).scalar() or 0
@@ -207,7 +211,7 @@ def update_complaint(complaint_id):
         
     data = request.get_json()
     if 'status' in data:
-        if data['status'] in ['in_progress', 'resolved', 'closed']:
+        if data['status'] in ['open', 'in_progress', 'resolved', 'closed']:
             complaint.status = data['status']
             if data['status'] == 'resolved':
                 complaint.resolved_at = datetime.utcnow()
